@@ -7,6 +7,7 @@ Automatically selects the optimal engine based on target URL and connectivity,
 with real-time terminal stdout logging and live telemetry emitter dispatch.
 """
 
+import os
 import asyncio
 import logging
 import httpx
@@ -44,6 +45,8 @@ class TinyFishEngine:
         self.session_id: Optional[str] = None
         self.cdp_url: Optional[str] = None
         self.base_url: Optional[str] = None
+        self.tunnel_url: Optional[str] = None
+        self.cloud_target_url: Optional[str] = None
         self.active_url: str = self.target_url
         self.last_action: str = "READY"
         self.last_screenshot_b64: Optional[str] = None
@@ -106,7 +109,7 @@ class TinyFishEngine:
             return False
 
     async def start(self, target_url: Optional[str] = None, force_cloud: bool = False, force_local: bool = False) -> str:
-        """Initializes the browser session using TinyFish Cloud or Local Playwright."""
+        """Initializes the browser session using TinyFish Cloud (default) or Local Playwright."""
         url = target_url or self.target_url
         if url:
             self.target_url = url
@@ -115,36 +118,58 @@ class TinyFishEngine:
         self._log(f"🐟 Initializing autonomous browser session (Target: {url or 'about:blank'}, Headless: {self.headless})")
         self._playwright = await async_playwright().start()
 
-        # Decide whether to use TinyFish Cloud or Local Playwright
+        # Decide whether to use TinyFish Cloud (Default) or Local Playwright
         is_local_target = self._is_loopback(url)
         has_api_key = bool(self.api_key and self.api_key.strip())
-        use_cloud = (force_cloud or (has_api_key and not is_local_target)) and not force_local
+        test_force_local = (os.getenv("HAWKSCAN_FORCE_LOCAL_TESTS") == "1")
+        use_cloud = not (force_local or test_force_local) and (has_api_key or force_cloud)
 
         if use_cloud:
-            self._log(f"☁️ Querying TinyFish Cloud CDP endpoint: {self.api_url}...")
-            try:
-                # Attempt connection to TinyFish Cloud CDP
-                cdp_url = await self._acquire_tinyfish_cdp_url()
-                if cdp_url:
-                    self._browser = await self._playwright.chromium.connect_over_cdp(cdp_url)
-                    if self._browser.contexts:
-                        self._context = self._browser.contexts[0]
+            target_cloud_url = url
+            if is_local_target:
+                # Target is on localhost: establish an ephemeral Cloudflare Tunnel so TinyFish Cloud in AWS can access it
+                from hawkscan.engine.tunnel_manager import tunnel_manager
+                self._log(f"🚇 Target is on localhost ({url}). Establishing Cloudflare Tunnel for TinyFish Cloud agent...")
+                try:
+                    tunnel_url = await tunnel_manager.start_tunnel(local_url=url, timeout=16.0)
+                    if tunnel_url:
+                        self.tunnel_url = tunnel_url
+                        target_cloud_url = tunnel_url
+                        self.cloud_target_url = tunnel_url
+                        self._log(f"🚇 Cloudflare Tunnel established: {url} -> {tunnel_url}", level="SUCCESS")
                     else:
-                        self._context = await self._browser.new_context(
-                            viewport={"width": 1280, "height": 800},
-                            user_agent="HawkScan-TinyFish-Browser/1.0"
-                        )
-                    if self._context.pages:
-                        self._active_page = self._context.pages[0]
-                    self.engine_mode = "TINYFISH_CLOUD"
-                    self.last_action = "CONNECTED_TINYFISH_CLOUD"
-                    self._log(f"✅ Connected to TinyFish Cloud CDP session {self.session_id} (CDP: {cdp_url[:45]}...)", level="SUCCESS")
-                    return self.engine_mode
-            except Exception as e:
-                self._log(f"⚠️ TinyFish Cloud CDP connection failed: {e}. Falling back to Local Playwright.", level="WARNING")
+                        self._log("⚠️ Cloudflare tunnel unavailable; will attempt fallback to Local Playwright.", level="WARNING")
+                        target_cloud_url = None
+                except Exception as te:
+                    self._log(f"⚠️ Error establishing Cloudflare tunnel: {te}", level="WARNING")
+                    target_cloud_url = None
+
+            if target_cloud_url:
+                self._log(f"☁️ Querying TinyFish Cloud CDP endpoint ({self.api_url}) for {target_cloud_url}...")
+                try:
+                    # Attempt connection to TinyFish Cloud CDP
+                    cdp_url = await self._acquire_tinyfish_cdp_url(target_url=target_cloud_url)
+                    if cdp_url:
+                        self._browser = await self._playwright.chromium.connect_over_cdp(cdp_url)
+                        if self._browser.contexts:
+                            self._context = self._browser.contexts[0]
+                        else:
+                            self._context = await self._browser.new_context(
+                                viewport={"width": 1280, "height": 800},
+                                user_agent="HawkScan-TinyFish-Browser/1.0"
+                            )
+                        if self._context.pages:
+                            self._active_page = self._context.pages[0]
+                        self.engine_mode = "TINYFISH_CLOUD"
+                        self.last_action = "CONNECTED_TINYFISH_CLOUD"
+                        tunnel_info = f" [via Cloudflare Tunnel: {self.tunnel_url}]" if self.tunnel_url else ""
+                        self._log(f"✅ Connected to TinyFish Cloud CDP session {self.session_id}{tunnel_info} (CDP: {cdp_url[:45]}...)", level="SUCCESS")
+                        return self.engine_mode
+                except Exception as e:
+                    self._log(f"⚠️ TinyFish Cloud CDP connection failed: {e}. Falling back to Local Playwright.", level="WARNING")
 
         # Fallback to local Playwright Chromium
-        self._log(f"💻 Launching local headless Playwright Chromium (Target: loopback/offline)")
+        self._log(f"💻 Launching local headless Playwright Chromium (Fallback/Offline)")
         self._browser = await self._playwright.chromium.launch(
             headless=self.headless,
             args=["--no-sandbox", "--disable-dev-shm-usage"]
@@ -159,18 +184,19 @@ class TinyFishEngine:
         self._log(f"✅ Local Playwright Chromium active (Session: {self.session_id})", level="SUCCESS")
         return self.engine_mode
 
-    async def _acquire_tinyfish_cdp_url(self) -> Optional[str]:
+    async def _acquire_tinyfish_cdp_url(self, target_url: Optional[str] = None) -> Optional[str]:
         """Queries TinyFish Cloud API to provision a CDP browser session."""
         headers = {
             "X-API-Key": self.api_key,
             "Content-Type": "application/json"
         }
-        async with httpx.AsyncClient(timeout=10.0) as client:
+        cloud_url = target_url or self.cloud_target_url or self.target_url or "https://www.tinyfish.ai"
+        async with httpx.AsyncClient(timeout=12.0) as client:
             try:
                 resp = await client.post(
                     self.api_url,
                     headers=headers,
-                    json={"url": self.target_url or "https://www.tinyfish.ai"}
+                    json={"url": cloud_url}
                 )
                 if resp.status_code in (200, 201):
                     data = resp.json()
@@ -205,12 +231,18 @@ class TinyFishEngine:
             else:
                 target_url = f"https://{target_url}"
 
-        self._log(f"🌐 Navigating browser viewport -> {target_url}")
+        # If TinyFish Cloud is active with an established Cloudflare Tunnel, translate localhost destination
+        nav_url = target_url
+        if self.engine_mode == "TINYFISH_CLOUD" and self.tunnel_url:
+            from hawkscan.engine.tunnel_manager import tunnel_manager
+            nav_url = tunnel_manager.map_local_to_tunnel(target_url)
+
+        self._log(f"🌐 Navigating browser viewport -> {target_url}" + (f" (via Tunnel: {nav_url})" if nav_url != target_url else ""))
         page = await self.get_page()
         try:
             self.last_action = f"NAVIGATE: {target_url}"
             self.active_url = target_url
-            await page.goto(target_url, wait_until=wait_until, timeout=timeout)
+            await page.goto(nav_url, wait_until=wait_until, timeout=timeout)
             title = ""
             try:
                 title = await page.title()
@@ -252,13 +284,13 @@ class TinyFishEngine:
             await self._capture_latest_screenshot()
 
         reason = ""
-        if self.engine_mode == "LOCAL_PLAYWRIGHT":
-            if self._is_loopback(self.target_url):
-                reason = "Running in Local Playwright Chromium mode because target is a local machine loopback address (127.0.0.1 / localhost) which remote cloud browsers cannot access."
+        if self.engine_mode == "TINYFISH_CLOUD":
+            if self.tunnel_url:
+                reason = f"Active TinyFish Cloud session via Cloudflare Tunnel ({self.tunnel_url} -> {self.target_url})"
             else:
-                reason = "Running in Local Playwright Chromium mode."
-        elif self.engine_mode == "TINYFISH_CLOUD":
-            reason = f"Running in TinyFish Cloud CDP mode (Session: {self.session_id})."
+                reason = f"Active TinyFish Cloud session ({self.session_id})"
+        elif self.engine_mode == "LOCAL_PLAYWRIGHT":
+            reason = "Running in Local Playwright Chromium mode."
 
         return {
             "engine_mode": self.engine_mode,
@@ -266,6 +298,7 @@ class TinyFishEngine:
             "session_id": self.session_id or ("local-playwright-session" if self.engine_mode == "LOCAL_PLAYWRIGHT" else "pending"),
             "cdp_url": self.cdp_url,
             "base_url": self.base_url,
+            "tunnel_url": self.tunnel_url,
             "target_url": self.target_url,
             "active_url": url,
             "title": title,
@@ -302,10 +335,17 @@ class TinyFishEngine:
             await self.start()
         converted = []
         for c in cookies:
+            cookie_domain = c.get("domain")
+            if self.engine_mode == "TINYFISH_CLOUD" and self.tunnel_url:
+                parsed_tun = urlparse(self.tunnel_url)
+                cookie_domain = parsed_tun.hostname
+            elif not cookie_domain:
+                cookie_domain = "127.0.0.1"
+
             cookie_dict = {
                 "name": c["name"],
                 "value": c["value"],
-                "domain": c.get("domain", "127.0.0.1"),
+                "domain": cookie_domain,
                 "path": c.get("path", "/"),
             }
             if "http_only" in c:

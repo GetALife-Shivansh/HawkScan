@@ -286,12 +286,6 @@ async def get_or_create_browser(target_url: Optional[str] = None, force_engine: 
                 need_reinit = True
             elif force_engine.upper() in ("LOCAL", "LOCAL_PLAYWRIGHT") and global_browser_engine.engine_mode != "LOCAL_PLAYWRIGHT":
                 need_reinit = True
-        elif not is_loopback and global_browser_engine.engine_mode == "LOCAL_PLAYWRIGHT":
-            # Switched from local loopback target to a public/remote domain: upgrade to TinyFish Cloud!
-            need_reinit = True
-        elif is_loopback and global_browser_engine.engine_mode == "TINYFISH_CLOUD" and not force_engine:
-            # Switched back to local loopback: switch to Local Playwright so localhost can resolve!
-            need_reinit = True
 
         if need_reinit:
             if global_browser_engine and global_browser_engine.engine_mode != "CLOSED":
@@ -306,6 +300,7 @@ async def get_or_create_browser(target_url: Optional[str] = None, force_engine: 
             )
             force_c = (force_engine.upper() in ("CLOUD", "TINYFISH_CLOUD")) if force_engine else False
             force_l = (force_engine.upper() in ("LOCAL", "LOCAL_PLAYWRIGHT")) if force_engine else False
+            # Default to TinyFish Cloud (with Cloudflare Tunnel for localhost targets)
             await global_browser_engine.start(force_cloud=force_c, force_local=force_l)
             if req_url:
                 await global_browser_engine.navigate(req_url)

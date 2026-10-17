@@ -27,7 +27,7 @@ HawkScan employs an automated 5-phase testing strategy strictly adhering to the 
 
 ---
 
-## 3. Verified Test Results (Ran 14 tests in 10.037s - 100% Passing)
+## 3. Verified Test Results (Ran 15 tests in 8.159s - 100% Passing)
 
 | Test ID & Method | Focus Area | Result | Verified Runtime Output / Assertions | Verification Date |
 | :--- | :--- | :--- | :--- | :--- |
@@ -44,7 +44,8 @@ HawkScan employs an automated 5-phase testing strategy strictly adhering to the 
 | `test_11_step_recorder` | Chronological Action Trace | **PASSED** | StepRecorder sequentially logs actions, numbering each step, capturing target, details, and outcome status badges. Generates GitHub Flavored Markdown table. | 2026-10-17 |
 | `test_12_tinyfish_engine_loopback_and_lifecycle` | Dual-Engine Browser Automation | **PASSED** | TinyFishEngine detects loopback target, launches local headless Playwright Chromium, navigates, executes JS evaluation, extracts cookies, and tears down cleanly. | 2026-10-17 |
 | `test_13_cookie_exploit_agent_breach` | Cookie Security & Session Theft | **PASSED** | CookieExploitAgent identifies missing HttpOnly attribute, executes `document.cookie` in DOM via TinyFish, steals session token, and proves replay against `/api/auth/me`. | 2026-10-17 |
-| `test_14_browser_control_plane_and_ui_endpoints` | TinyFish UI, Reconnect & Terminal Stream | **PASSED** | War Room serves TinyFish Autonomous Browser window markup with `tfSwitchEngineBtn`. Tests `/api/browser/status` (with `engine_reason`), `/api/browser/reconnect` (dynamic engine switching), `/api/browser/navigate`, `/api/browser/eval` (`100 * 2 == 200`), `/api/browser/cookies`, and `[TINYFISH]` terminal stdout logging with SSE emitter synchronization. | 2026-10-17 |
+| `test_14_browser_control_plane_and_ui_endpoints` | TinyFish UI, Reconnect & Terminal Stream | **PASSED** | War Room serves TinyFish Autonomous Browser window markup with `tfSwitchEngineBtn` and `tfTunnelChip`. Tests `/api/browser/status` (with `engine_reason` and `tunnel_url`), `/api/browser/reconnect`, `/api/browser/navigate`, `/api/browser/eval` (`100 * 2 == 200`), `/api/browser/cookies`, and `[TINYFISH]` terminal stdout logging. | 2026-10-17 |
+| `test_15_cloudflare_tunnel_and_tinyfish_cloud_mode` | Cloudflare Tunnel & Cloud Mode | **PASSED** | Validates `CloudflareTunnelManager` binary discovery (`/opt/homebrew/bin/cloudflared`), bidirectional local-to-tunnel URL translation, and `TinyFishEngine` state reporting with active tunnel URL. | 2026-10-17 |
 
 ---
 

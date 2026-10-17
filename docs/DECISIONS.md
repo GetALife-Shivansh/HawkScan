@@ -12,6 +12,7 @@ This document serves as the chronological index of architectural, design, and te
 | [ADR-0006](decisions/0006-tinyfish-browser-agent-and-cookie-exploitation.md) | 2026-10-17 | TinyFish Browser Automation Engine & Cookie Security Exploitation | Accepted | Implemented |
 | [ADR-0007](decisions/0007-tinyfish-war-room-browser-viewport-and-control-plane.md) | 2026-10-17 | TinyFish War Room Browser Viewport and Control Plane Integration | Accepted | Implemented |
 | [ADR-0008](decisions/0008-dynamic-engine-arbitration-loopback-safeguard-and-cloud-cdp.md) | 2026-10-17 | Dynamic Engine Arbitration, Loopback Safeguard, and TinyFish Cloud CDP Session Management | Accepted | Implemented |
+| [ADR-0009](decisions/0009-default-tinyfish-cloud-mode-and-cloudflare-tunnel.md) | 2026-10-17 | Default TinyFish Cloud Mode and Cloudflare Quick Tunnel for Localhost Targets | Accepted | Implemented |
 
 ---
 
@@ -24,4 +25,5 @@ This document serves as the chronological index of architectural, design, and te
 6. **ADR-0006**: Integrated TinyFish dual-engine browser automation, chronological StepRecorder, and CookieExploitAgent for DOM session theft verification.
 7. **ADR-0007**: Embedded the primary TinyFish autonomous browser window, dual-mode viewport, agent HUD, cookie jar, and DOM console into War Room UI.
 8. **ADR-0008**: Established dynamic engine arbitration, loopback safeguarding for localhost targets, and seamless TinyFish Cloud CDP session acquisition.
+9. **ADR-0009**: Configured TinyFish Cloud as the default browser engine and integrated ephemeral Cloudflare Quick Tunnels to bridge localhost applications directly to AWS cloud browser agents.
 

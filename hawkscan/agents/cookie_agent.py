@@ -3,6 +3,7 @@ Audits browser cookies using TinyFish, identifies missing HttpOnly / Secure / Sa
 proves client-side session theft via JavaScript (document.cookie), and records chronological exploit steps.
 """
 
+import os
 import httpx
 from urllib.parse import urljoin
 from typing import Dict, Any, Optional, Callable, List
@@ -18,11 +19,13 @@ class CookieExploitAgent:
         self,
         target_url: str,
         emit_fn: Optional[Callable[[str, str], Any]] = None,
-        engine: Optional[TinyFishEngine] = None
+        engine: Optional[TinyFishEngine] = None,
+        force_local: bool = False
     ):
         self.target_url = target_url.rstrip("/")
         self.emit_fn = emit_fn
         self.engine = engine
+        self.force_local = force_local or (os.getenv("HAWKSCAN_FORCE_LOCAL_TESTS") == "1")
 
     def log(self, msg: str):
         from datetime import datetime
@@ -47,7 +50,7 @@ class CookieExploitAgent:
         )
 
         try:
-            mode = await engine.start(self.target_url)
+            mode = await engine.start(self.target_url, force_local=self.force_local)
             self.log(f"TinyFish browser engine initialized in {mode} mode.")
 
             # Step 1: Navigate to portal homepage

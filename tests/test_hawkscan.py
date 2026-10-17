@@ -36,6 +36,7 @@ from hawkscan.server.app import app as hawkscan_app
 class TestHawkScanPentester(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        os.environ["HAWKSCAN_FORCE_LOCAL_TESTS"] = "1"
         init_db()
         cls.target_client = TestClient(target_app)
         cls.hawkscan_client = TestClient(hawkscan_app)
@@ -370,13 +371,18 @@ class TestHawkScanPentester(unittest.TestCase):
         async def run_browser_test():
             engine = TinyFishEngine(target_url=self.live_url)
             self.assertTrue(engine._is_loopback(self.live_url))
-            mode = await engine.start()
+            mode = await engine.start(force_local=True)
             self.assertEqual(mode, "LOCAL_PLAYWRIGHT")
             ok = await engine.navigate(self.live_url)
             self.assertTrue(ok)
             js_res = await engine.execute_js("10 + 20")
             self.assertEqual(js_res, 30)
             await engine.close()
+
+            # Test tunnel manager utility
+            from hawkscan.engine.tunnel_manager import tunnel_manager
+            bin_path = tunnel_manager.find_cloudflared_binary()
+            self.assertTrue(bin_path is not None and "cloudflared" in bin_path)
 
         asyncio.run(run_browser_test())
 
@@ -409,6 +415,7 @@ class TestHawkScanPentester(unittest.TestCase):
         self.assertIn("tfPaneLogs", ui_resp.text)
         self.assertIn("tfTabLogs", ui_resp.text)
         self.assertIn("tfSwitchEngineBtn", ui_resp.text)
+        self.assertIn("tfTunnelChip", ui_resp.text)
         self.assertIn("stage-tinyfish", ui_resp.text)
 
         # 2. Test /api/browser/status endpoint
@@ -419,6 +426,7 @@ class TestHawkScanPentester(unittest.TestCase):
         self.assertIn("engine_mode", status_data["state"])
         self.assertIn("session_id", status_data["state"])
         self.assertIn("engine_reason", status_data["state"])
+        self.assertIn("tunnel_url", status_data["state"])
 
         # 3. Test /api/browser/reconnect endpoint
         reconnect_resp = self.hawkscan_client.post("/api/browser/reconnect", json={"url": self.live_url, "mode": "local"})
@@ -458,6 +466,45 @@ class TestHawkScanPentester(unittest.TestCase):
         self.assertGreaterEqual(len(emitted_logs), 1)
         self.assertEqual(emitted_logs[0][0], "tinyfish")
         self.assertIn("Test TinyFish terminal stream message", emitted_logs[0][1])
+
+    def test_15_cloudflare_tunnel_and_tinyfish_cloud_mode(self):
+        """Verify CloudflareTunnelManager URL mapping and TinyFish Cloud default mode configuration."""
+        from hawkscan.engine.tunnel_manager import CloudflareTunnelManager, tunnel_manager
+
+        # 1. Binary discovery
+        bin_path = tunnel_manager.find_cloudflared_binary()
+        self.assertTrue(bin_path is not None)
+
+        # 2. URL translation logic
+        mgr = CloudflareTunnelManager()
+        mgr.public_url = "https://mock-hawkscan-tunnel.trycloudflare.com"
+        mgr.local_target_url = "http://127.0.0.1:8000"
+
+        # Local to tunnel translation
+        mapped = mgr.map_local_to_tunnel("http://127.0.0.1:8000/api/records/REC-9001?flag=true")
+        self.assertEqual(mapped, "https://mock-hawkscan-tunnel.trycloudflare.com/api/records/REC-9001?flag=true")
+
+        # Tunnel to local translation
+        reversed_url = mgr.map_tunnel_to_local("https://mock-hawkscan-tunnel.trycloudflare.com/api/search")
+        self.assertEqual(reversed_url, "http://127.0.0.1:8000/api/search")
+
+        # External URLs remain untouched
+        external = mgr.map_local_to_tunnel("https://example.com/login")
+        self.assertEqual(external, "https://example.com/login")
+
+        # 3. TinyFishEngine state reporting tunnel_url
+        engine = TinyFishEngine(target_url="http://127.0.0.1:8000")
+        engine.engine_mode = "TINYFISH_CLOUD"
+        engine.session_id = "tf-mock-session"
+        engine.tunnel_url = "https://mock-hawkscan-tunnel.trycloudflare.com"
+
+        async def verify_state():
+            state = await engine.get_state()
+            self.assertEqual(state["engine_mode"], "TINYFISH_CLOUD")
+            self.assertEqual(state["tunnel_url"], "https://mock-hawkscan-tunnel.trycloudflare.com")
+            self.assertIn("Cloudflare Tunnel", state["engine_reason"])
+
+        asyncio.run(verify_state())
 
 
 if __name__ == "__main__":

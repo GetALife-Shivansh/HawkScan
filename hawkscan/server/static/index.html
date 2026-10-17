@@ -1051,13 +1051,16 @@
               <div class="tf-tab-chip">
                 <span class="tf-fish-icon">🐟</span>
                 <span>TinyFish Autonomous Agent</span>
-                <span id="tfEngineModeBadge" class="tf-engine-tag">LOCAL_PLAYWRIGHT</span>
+                <span id="tfEngineModeBadge" class="tf-engine-tag" style="background: linear-gradient(135deg, #06b6d4, #3b82f6);">TINYFISH_CLOUD</span>
               </div>
             </div>
             <div class="tf-meta-chips">
+              <span id="tfTunnelChip" class="tf-chip" style="display: none; color: #c084fc; border-color: rgba(192, 132, 252, 0.4); font-size: 0.65rem;" title="Cloudflare Quick Tunnel Active">
+                🚇 <span id="tfTunnelUrlText" style="color: #e9d5ff;">tunnel...</span>
+              </span>
               <span class="tf-chip" title="Session Identifier">SID: <span id="tfSessionId" style="color: #38bdf8;">init...</span></span>
-              <button id="tfSwitchEngineBtn" class="btn-action" onclick="toggleBrowserEngineMode()" title="Switch between Local Playwright and TinyFish Cloud" style="font-size: 0.65rem; padding: 0.15rem 0.45rem; background: rgba(56, 189, 248, 0.12); border-color: rgba(56, 189, 248, 0.4); color: #38bdf8;">
-                ☁️ Switch to Cloud
+              <button id="tfSwitchEngineBtn" class="btn-action" onclick="toggleBrowserEngineMode()" title="Switch between Local Playwright and TinyFish Cloud" style="font-size: 0.65rem; padding: 0.15rem 0.45rem; background: rgba(167, 139, 250, 0.12); border-color: rgba(167, 139, 250, 0.4); color: #a78bfa;">
+                💻 Switch to Local
               </button>
               <span id="tfStatusChip" class="tf-status-chip online">
                 <span style="font-size: 0.55rem;">●</span> <span id="tfStatusText">READY</span>
@@ -1633,6 +1636,18 @@
           if (sid && state.session_id) {
             sid.textContent = state.session_id.length > 18 ? state.session_id.substring(0, 18) + '...' : state.session_id;
             sid.title = `${state.session_id} - ${state.engine_reason || ''}`;
+          }
+          const tunnelChip = document.getElementById('tfTunnelChip');
+          const tunnelText = document.getElementById('tfTunnelUrlText');
+          if (tunnelChip && tunnelText) {
+            if (state.tunnel_url) {
+              tunnelChip.style.display = 'inline-flex';
+              const shortUrl = state.tunnel_url.replace('https://', '');
+              tunnelText.textContent = shortUrl.length > 20 ? shortUrl.substring(0, 20) + '...' : shortUrl;
+              tunnelChip.title = `Cloudflare Tunnel active: ${state.tunnel_url} -> ${state.target_url}`;
+            } else {
+              tunnelChip.style.display = 'none';
+            }
           }
           if (state.active_url) {
             const urlInp = document.getElementById('tfUrlInput');
