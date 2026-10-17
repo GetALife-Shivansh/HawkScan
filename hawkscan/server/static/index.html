@@ -1056,6 +1056,9 @@
             </div>
             <div class="tf-meta-chips">
               <span class="tf-chip" title="Session Identifier">SID: <span id="tfSessionId" style="color: #38bdf8;">init...</span></span>
+              <button id="tfSwitchEngineBtn" class="btn-action" onclick="toggleBrowserEngineMode()" title="Switch between Local Playwright and TinyFish Cloud" style="font-size: 0.65rem; padding: 0.15rem 0.45rem; background: rgba(56, 189, 248, 0.12); border-color: rgba(56, 189, 248, 0.4); color: #38bdf8;">
+                ☁️ Switch to Cloud
+              </button>
               <span id="tfStatusChip" class="tf-status-chip online">
                 <span style="font-size: 0.55rem;">●</span> <span id="tfStatusText">READY</span>
               </span>
@@ -1603,16 +1606,33 @@
           const modeBadge = document.getElementById('tfEngineModeBadge');
           if (modeBadge && state.engine_mode) {
             modeBadge.textContent = state.engine_mode;
+            modeBadge.title = state.engine_reason || (state.engine_mode === 'LOCAL_PLAYWRIGHT' ? 'Local Playwright: Loopback 127.0.0.1 cannot be reached by cloud browser.' : 'TinyFish Cloud CDP active.');
             if (state.engine_mode === 'TINYFISH_CLOUD') {
               modeBadge.style.background = 'linear-gradient(135deg, #06b6d4, #3b82f6)';
             } else {
               modeBadge.style.background = 'linear-gradient(135deg, #4f46e5, #06b6d4)';
             }
           }
+          const switchBtn = document.getElementById('tfSwitchEngineBtn');
+          if (switchBtn && state.engine_mode) {
+            if (state.engine_mode === 'TINYFISH_CLOUD') {
+              switchBtn.textContent = '💻 Switch to Local';
+              switchBtn.title = 'Switch to Local Playwright Chromium (Required for local loopback 127.0.0.1 targets)';
+              switchBtn.style.color = '#a78bfa';
+              switchBtn.style.borderColor = 'rgba(167, 139, 250, 0.4)';
+              switchBtn.style.background = 'rgba(167, 139, 250, 0.12)';
+            } else {
+              switchBtn.textContent = '☁️ Switch to Cloud';
+              switchBtn.title = 'Switch to TinyFish Cloud CDP (For public targets like https://example.com)';
+              switchBtn.style.color = '#38bdf8';
+              switchBtn.style.borderColor = 'rgba(56, 189, 248, 0.4)';
+              switchBtn.style.background = 'rgba(56, 189, 248, 0.12)';
+            }
+          }
           const sid = document.getElementById('tfSessionId');
           if (sid && state.session_id) {
             sid.textContent = state.session_id.length > 18 ? state.session_id.substring(0, 18) + '...' : state.session_id;
-            sid.title = state.session_id;
+            sid.title = `${state.session_id} - ${state.engine_reason || ''}`;
           }
           if (state.active_url) {
             const urlInp = document.getElementById('tfUrlInput');
@@ -1636,6 +1656,31 @@
         }
       } catch (err) {
         console.debug('Failed to fetch browser status:', err);
+      }
+    }
+
+    async function toggleBrowserEngineMode() {
+      const modeBadge = document.getElementById('tfEngineModeBadge');
+      const curMode = modeBadge ? modeBadge.textContent.trim() : 'LOCAL_PLAYWRIGHT';
+      const targetMode = curMode === 'TINYFISH_CLOUD' ? 'local' : 'cloud';
+      const urlInp = (document.getElementById('tfUrlInput').value || '').trim() || (targetMode === 'cloud' ? 'https://example.com' : 'http://127.0.0.1:8000');
+
+      updateTinyFishLiveHud(`ENGINE SWITCH: Requesting ${targetMode.toUpperCase()} mode...`);
+      try {
+        const res = await fetch('/api/browser/reconnect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: urlInp, mode: targetMode })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.state) {
+            await fetchBrowserStatus(data.state.active_url || urlInp);
+            updateTinyFishLiveHud(`SWITCHED: Engine active in ${data.state.engine_mode} (${data.state.session_id})`);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to switch engine mode:', err);
       }
     }
 

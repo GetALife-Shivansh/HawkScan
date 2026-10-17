@@ -11,6 +11,7 @@ This document serves as the chronological index of architectural, design, and te
 | [ADR-0005](decisions/0005-oasis-sarif-and-remediation-patch-artifacts.md) | 2026-10-17 | OASIS SARIF 2.1.0 and Unified Remediation Patch Artifacts | Accepted | Implemented |
 | [ADR-0006](decisions/0006-tinyfish-browser-agent-and-cookie-exploitation.md) | 2026-10-17 | TinyFish Browser Automation Engine & Cookie Security Exploitation | Accepted | Implemented |
 | [ADR-0007](decisions/0007-tinyfish-war-room-browser-viewport-and-control-plane.md) | 2026-10-17 | TinyFish War Room Browser Viewport and Control Plane Integration | Accepted | Implemented |
+| [ADR-0008](decisions/0008-dynamic-engine-arbitration-loopback-safeguard-and-cloud-cdp.md) | 2026-10-17 | Dynamic Engine Arbitration, Loopback Safeguard, and TinyFish Cloud CDP Session Management | Accepted | Implemented |
 
 ---
 
@@ -22,4 +23,5 @@ This document serves as the chronological index of architectural, design, and te
 5. **ADR-0005**: Standardized machine-readable outputs into OASIS SARIF 2.1.0 schemas and unified git diff patches.
 6. **ADR-0006**: Integrated TinyFish dual-engine browser automation, chronological StepRecorder, and CookieExploitAgent for DOM session theft verification.
 7. **ADR-0007**: Embedded the primary TinyFish autonomous browser window, dual-mode viewport, agent HUD, cookie jar, and DOM console into War Room UI.
+8. **ADR-0008**: Established dynamic engine arbitration, loopback safeguarding for localhost targets, and seamless TinyFish Cloud CDP session acquisition.
 

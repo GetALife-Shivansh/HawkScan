@@ -105,7 +105,7 @@ class TinyFishEngine:
         except Exception:
             return False
 
-    async def start(self, target_url: Optional[str] = None) -> str:
+    async def start(self, target_url: Optional[str] = None, force_cloud: bool = False, force_local: bool = False) -> str:
         """Initializes the browser session using TinyFish Cloud or Local Playwright."""
         url = target_url or self.target_url
         if url:
@@ -118,18 +118,24 @@ class TinyFishEngine:
         # Decide whether to use TinyFish Cloud or Local Playwright
         is_local_target = self._is_loopback(url)
         has_api_key = bool(self.api_key and self.api_key.strip())
+        use_cloud = (force_cloud or (has_api_key and not is_local_target)) and not force_local
 
-        if has_api_key and not is_local_target:
+        if use_cloud:
             self._log(f"☁️ Querying TinyFish Cloud CDP endpoint: {self.api_url}...")
             try:
                 # Attempt connection to TinyFish Cloud CDP
                 cdp_url = await self._acquire_tinyfish_cdp_url()
                 if cdp_url:
                     self._browser = await self._playwright.chromium.connect_over_cdp(cdp_url)
-                    self._context = await self._browser.new_context(
-                        viewport={"width": 1280, "height": 800},
-                        user_agent="HawkScan-TinyFish-Browser/1.0"
-                    )
+                    if self._browser.contexts:
+                        self._context = self._browser.contexts[0]
+                    else:
+                        self._context = await self._browser.new_context(
+                            viewport={"width": 1280, "height": 800},
+                            user_agent="HawkScan-TinyFish-Browser/1.0"
+                        )
+                    if self._context.pages:
+                        self._active_page = self._context.pages[0]
                     self.engine_mode = "TINYFISH_CLOUD"
                     self.last_action = "CONNECTED_TINYFISH_CLOUD"
                     self._log(f"✅ Connected to TinyFish Cloud CDP session {self.session_id} (CDP: {cdp_url[:45]}...)", level="SUCCESS")
@@ -184,7 +190,10 @@ class TinyFishEngine:
         if self._active_page is None or self._active_page.is_closed():
             if not self._context:
                 await self.start()
-            self._active_page = await self._context.new_page()
+            if self._context and self._context.pages:
+                self._active_page = self._context.pages[0]
+            elif self._context:
+                self._active_page = await self._context.new_page()
         return self._active_page
 
     async def navigate(self, url: str, wait_until: str = "domcontentloaded", timeout: int = 15000) -> bool:
@@ -242,8 +251,18 @@ class TinyFishEngine:
         if not self.last_screenshot_b64 and self._active_page:
             await self._capture_latest_screenshot()
 
+        reason = ""
+        if self.engine_mode == "LOCAL_PLAYWRIGHT":
+            if self._is_loopback(self.target_url):
+                reason = "Running in Local Playwright Chromium mode because target is a local machine loopback address (127.0.0.1 / localhost) which remote cloud browsers cannot access."
+            else:
+                reason = "Running in Local Playwright Chromium mode."
+        elif self.engine_mode == "TINYFISH_CLOUD":
+            reason = f"Running in TinyFish Cloud CDP mode (Session: {self.session_id})."
+
         return {
             "engine_mode": self.engine_mode,
+            "engine_reason": reason,
             "session_id": self.session_id or ("local-playwright-session" if self.engine_mode == "LOCAL_PLAYWRIGHT" else "pending"),
             "cdp_url": self.cdp_url,
             "base_url": self.base_url,

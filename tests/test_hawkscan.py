@@ -408,6 +408,7 @@ class TestHawkScanPentester(unittest.TestCase):
         self.assertIn("tfCookieTableBody", ui_resp.text)
         self.assertIn("tfPaneLogs", ui_resp.text)
         self.assertIn("tfTabLogs", ui_resp.text)
+        self.assertIn("tfSwitchEngineBtn", ui_resp.text)
         self.assertIn("stage-tinyfish", ui_resp.text)
 
         # 2. Test /api/browser/status endpoint
@@ -417,21 +418,29 @@ class TestHawkScanPentester(unittest.TestCase):
         self.assertEqual(status_data["status"], "success")
         self.assertIn("engine_mode", status_data["state"])
         self.assertIn("session_id", status_data["state"])
+        self.assertIn("engine_reason", status_data["state"])
 
-        # 3. Test /api/browser/navigate endpoint
+        # 3. Test /api/browser/reconnect endpoint
+        reconnect_resp = self.hawkscan_client.post("/api/browser/reconnect", json={"url": self.live_url, "mode": "local"})
+        self.assertEqual(reconnect_resp.status_code, 200)
+        rec_data = reconnect_resp.json()
+        self.assertEqual(rec_data["status"], "success")
+        self.assertEqual(rec_data["state"]["engine_mode"], "LOCAL_PLAYWRIGHT")
+
+        # 4. Test /api/browser/navigate endpoint
         nav_resp = self.hawkscan_client.post("/api/browser/navigate", json={"url": self.live_url})
         self.assertEqual(nav_resp.status_code, 200)
         nav_data = nav_resp.json()
         self.assertEqual(nav_data["status"], "success")
 
-        # 4. Test /api/browser/eval endpoint
+        # 5. Test /api/browser/eval endpoint
         eval_resp = self.hawkscan_client.post("/api/browser/eval", json={"script": "100 * 2"})
         self.assertEqual(eval_resp.status_code, 200)
         eval_data = eval_resp.json()
         self.assertEqual(eval_data["status"], "success")
         self.assertEqual(eval_data["result"], 200)
 
-        # 5. Test /api/browser/cookies endpoint
+        # 6. Test /api/browser/cookies endpoint
         cookie_resp = self.hawkscan_client.get("/api/browser/cookies")
         self.assertEqual(cookie_resp.status_code, 200)
         cookie_data = cookie_resp.json()

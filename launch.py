@@ -199,9 +199,14 @@ def main():
                     rlist, _, _ = select.select([sys.stdin], [], [], 0.5)
                     if rlist:
                         ch = os.read(sys.stdin.fileno(), 1024)
-                        if not ch or b"\x11" in ch or b"\x03" in ch or b"q" in ch or b"Q" in ch:
+                        if not ch:
+                            # Stdin closed or EOF (e.g. backgrounded process)
+                            is_interactive = False
+                            continue
+                        if b"\x11" in ch or b"\x03" in ch or b"q" in ch or b"Q" in ch:
                             shutdown()
                 except Exception:
+                    is_interactive = False
                     time.sleep(0.5)
             else:
                 time.sleep(0.5)

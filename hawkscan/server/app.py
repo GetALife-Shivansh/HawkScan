@@ -8,6 +8,7 @@ import asyncio
 import json
 import time
 import httpx
+from urllib.parse import urlparse
 from typing import Dict, Any, List, Optional
 from fastapi import FastAPI, BackgroundTasks, Request, Response, Query
 from fastapi.responses import StreamingResponse, FileResponse
@@ -254,7 +255,18 @@ global_browser_loop: Optional[asyncio.AbstractEventLoop] = None
 global_browser_lock: Optional[asyncio.Lock] = None
 
 
-async def get_or_create_browser(target_url: Optional[str] = None) -> TinyFishEngine:
+def _is_loopback_url(url: Optional[str]) -> bool:
+    if not url:
+        return True
+    try:
+        parsed = urlparse(url)
+        host = (parsed.hostname or "").lower()
+        return host in ("localhost", "127.0.0.1", "0.0.0.0", "::1") or host.endswith(".local")
+    except Exception:
+        return False
+
+
+async def get_or_create_browser(target_url: Optional[str] = None, force_engine: Optional[str] = None) -> TinyFishEngine:
     global global_browser_engine, global_browser_loop, global_browser_lock
     cur_loop = asyncio.get_running_loop()
     if global_browser_lock is None or global_browser_loop != cur_loop:
@@ -263,19 +275,60 @@ async def get_or_create_browser(target_url: Optional[str] = None) -> TinyFishEng
         global_browser_loop = cur_loop
 
     async with global_browser_lock:
+        req_url = target_url or settings.DEFAULT_TARGET_URL
+        is_loopback = _is_loopback_url(req_url)
+
+        need_reinit = False
         if global_browser_engine is None or global_browser_engine.engine_mode == "CLOSED":
-            url = target_url or settings.DEFAULT_TARGET_URL
+            need_reinit = True
+        elif force_engine:
+            if force_engine.upper() in ("CLOUD", "TINYFISH_CLOUD") and global_browser_engine.engine_mode != "TINYFISH_CLOUD":
+                need_reinit = True
+            elif force_engine.upper() in ("LOCAL", "LOCAL_PLAYWRIGHT") and global_browser_engine.engine_mode != "LOCAL_PLAYWRIGHT":
+                need_reinit = True
+        elif not is_loopback and global_browser_engine.engine_mode == "LOCAL_PLAYWRIGHT":
+            # Switched from local loopback target to a public/remote domain: upgrade to TinyFish Cloud!
+            need_reinit = True
+        elif is_loopback and global_browser_engine.engine_mode == "TINYFISH_CLOUD" and not force_engine:
+            # Switched back to local loopback: switch to Local Playwright so localhost can resolve!
+            need_reinit = True
+
+        if need_reinit:
+            if global_browser_engine and global_browser_engine.engine_mode != "CLOSED":
+                try:
+                    await global_browser_engine.close()
+                except Exception:
+                    pass
             global_browser_engine = TinyFishEngine(
-                target_url=url,
+                target_url=req_url,
                 emit_fn=broadcast_event,
                 verbose_terminal=True
             )
-            await global_browser_engine.start()
-            if url:
-                await global_browser_engine.navigate(url)
+            force_c = (force_engine.upper() in ("CLOUD", "TINYFISH_CLOUD")) if force_engine else False
+            force_l = (force_engine.upper() in ("LOCAL", "LOCAL_PLAYWRIGHT")) if force_engine else False
+            await global_browser_engine.start(force_cloud=force_c, force_local=force_l)
+            if req_url:
+                await global_browser_engine.navigate(req_url)
         elif target_url and global_browser_engine.target_url != target_url:
             await global_browser_engine.navigate(target_url)
+
         return global_browser_engine
+
+
+@app.post("/api/browser/reconnect")
+async def browser_reconnect(request: Request):
+    """Explicitly switches or reconnects the browser engine (cloud, local, or auto)."""
+    try:
+        body = await request.json()
+        target_url = body.get("url") or settings.DEFAULT_TARGET_URL
+        mode = (body.get("mode") or "").strip().lower()  # "cloud", "local", or "auto"
+        force_eng = mode if mode in ("cloud", "local") else None
+        eng = await get_or_create_browser(target_url=target_url, force_engine=force_eng)
+        state = await eng.get_state()
+        await broadcast_event("browser", "reconnect", f"Switched engine to {state['engine_mode']} ({state['session_id']})", state)
+        return {"status": "success", "state": state}
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
 
 
 @app.get("/api/browser/status")
