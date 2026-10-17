@@ -40,6 +40,15 @@ def main():
 
         dossier = asyncio.run(pipeline.run())
         print(f"\n[+] Pentest Complete. Verified Breaches: {dossier['summary']['verified_vulnerabilities']}")
+        
+        if args.output == "markdown":
+            print("\n" + dossier["markdown_report"])
+        elif args.output == "json":
+            import json
+            print(json.dumps(dossier, indent=2))
+        elif args.output == "sarif":
+            import json
+            print(json.dumps(dossier.get("sarif", {}), indent=2))
     else:
         parser.print_help()
 
