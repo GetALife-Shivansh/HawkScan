@@ -21,13 +21,14 @@ def get_security_status(db: Session = Depends(get_db)):
     return {
         "idor_protection_enabled": cfg.idor_protection_enabled if cfg else False,
         "sqli_protection_enabled": cfg.sqli_protection_enabled if cfg else False,
-        "cors_protection_enabled": cfg.cors_protection_enabled if cfg else False
+        "cors_protection_enabled": cfg.cors_protection_enabled if cfg else False,
+        "cookie_protection_enabled": getattr(cfg, "cookie_protection_enabled", False) if cfg else False
     }
 
 
 @router.post("/toggle-patch")
 def toggle_patch(
-    feature: str = Query(..., description="Feature to toggle: 'idor', 'sqli', or 'cors'"),
+    feature: str = Query(..., description="Feature to toggle: 'idor', 'sqli', 'cors', or 'cookie'"),
     enabled: bool = Query(..., description="True to enable patch, False to disable"),
     db: Session = Depends(get_db)
 ):
@@ -43,8 +44,10 @@ def toggle_patch(
         cfg.sqli_protection_enabled = enabled
     elif feat_lower == "cors":
         cfg.cors_protection_enabled = enabled
+    elif feat_lower in ("cookie", "cookies"):
+        cfg.cookie_protection_enabled = enabled
     else:
-        raise HTTPException(status_code=400, detail="Unknown feature. Use 'idor', 'sqli', or 'cors'.")
+        raise HTTPException(status_code=400, detail="Unknown feature. Use 'idor', 'sqli', 'cors', or 'cookie'.")
 
     db.commit()
     return {
@@ -53,13 +56,14 @@ def toggle_patch(
         "enabled": enabled,
         "idor_protection_enabled": cfg.idor_protection_enabled,
         "sqli_protection_enabled": cfg.sqli_protection_enabled,
-        "cors_protection_enabled": cfg.cors_protection_enabled
+        "cors_protection_enabled": cfg.cors_protection_enabled,
+        "cookie_protection_enabled": getattr(cfg, "cookie_protection_enabled", False)
     }
 
 
 @router.post("/make-insecure")
 def make_insecure(db: Session = Depends(get_db)):
-    """Disables all protections, exposing IDOR, SQLi, and CORS vulnerabilities."""
+    """Disables all protections, exposing IDOR, SQLi, CORS, and Cookie vulnerabilities."""
     cfg = db.query(SecurityConfig).first()
     if not cfg:
         cfg = SecurityConfig(id=1)
@@ -67,20 +71,22 @@ def make_insecure(db: Session = Depends(get_db)):
     cfg.idor_protection_enabled = False
     cfg.sqli_protection_enabled = False
     cfg.cors_protection_enabled = False
+    cfg.cookie_protection_enabled = False
     db.commit()
     return {
         "status": "success",
         "mode": "insecure",
-        "message": "Target application is now INSECURE (IDOR, SQLi, and CORS vulnerabilities active).",
+        "message": "Target application is now INSECURE (IDOR, SQLi, CORS, and Cookie vulnerabilities active).",
         "idor_protection_enabled": False,
         "sqli_protection_enabled": False,
-        "cors_protection_enabled": False
+        "cors_protection_enabled": False,
+        "cookie_protection_enabled": False
     }
 
 
 @router.post("/make-secure")
 def make_secure(db: Session = Depends(get_db)):
-    """Enables all protections, mitigating IDOR, SQLi, and CORS vulnerabilities."""
+    """Enables all protections, mitigating IDOR, SQLi, CORS, and Cookie vulnerabilities."""
     cfg = db.query(SecurityConfig).first()
     if not cfg:
         cfg = SecurityConfig(id=1)
@@ -88,6 +94,7 @@ def make_secure(db: Session = Depends(get_db)):
     cfg.idor_protection_enabled = True
     cfg.sqli_protection_enabled = True
     cfg.cors_protection_enabled = True
+    cfg.cookie_protection_enabled = True
     db.commit()
     return {
         "status": "success",
@@ -95,7 +102,8 @@ def make_secure(db: Session = Depends(get_db)):
         "message": "Target application is now HARDENED / PATCHED.",
         "idor_protection_enabled": True,
         "sqli_protection_enabled": True,
-        "cors_protection_enabled": True
+        "cors_protection_enabled": True,
+        "cookie_protection_enabled": True
     }
 
 

@@ -55,7 +55,24 @@ class PatchGenerator:
                     "+    allow_origins=[\"https://apex.local\", \"https://portal.apex.local\"],\n"
                     "     allow_credentials=True,\n"
                     "     allow_methods=[\"*\"],\n"
+                    " )"
                 )
                 patches["cors_policy"] = diff
+
+            elif "COOKIE" in vid:
+                diff = (
+                    "--- a/target_app/routes/auth.py\n"
+                    "+++ b/target_app/routes/auth.py\n"
+                    "@@ -32,6 +32,9 @@ def login(req: LoginRequest, response: Response, db: Session = Depends(get_db)):\n"
+                    "     response.set_cookie(\n"
+                    "         key=\"apex_session\",\n"
+                    "         value=user.token,\n"
+                    "-        httponly=False,\n"
+                    "+        httponly=True,\n"
+                    "+        secure=True,\n"
+                    "+        samesite=\"strict\"\n"
+                    "     )"
+                )
+                patches["auth_cookie_hardening"] = diff
 
         return patches

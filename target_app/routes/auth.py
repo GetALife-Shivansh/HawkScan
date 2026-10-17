@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Response, Request
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
-from target_app.database import SessionLocal, User
+from target_app.database import SessionLocal, User, SecurityConfig
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -28,12 +28,16 @@ def login(req: LoginRequest, response: Response, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    # Issue session cookie and return bearer token
+    cfg = db.query(SecurityConfig).first()
+    is_hardened = bool(cfg and getattr(cfg, "cookie_protection_enabled", False))
+
+    # Issue session cookie: when not hardened, httponly=False (vulnerable to JS theft) and secure=False
     response.set_cookie(
         key="apex_session",
         value=user.token,
-        httponly=True,
-        samesite="lax"
+        httponly=True if is_hardened else False,
+        secure=True if is_hardened else False,
+        samesite="strict" if is_hardened else "lax"
     )
     return {
         "status": "success",

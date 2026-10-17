@@ -526,6 +526,124 @@
       transition: all 0.15s;
     }
     .btn-action:hover { background: rgba(56, 189, 248, 0.15); border-color: #38bdf8; color: #38bdf8; }
+
+    /* TinyFish Step Timeline & Cookie Badges */
+    .cookie-banner {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.55rem 0.75rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .flag-chip {
+      font-size: 0.65rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .flag-bad {
+      background: rgba(244, 63, 94, 0.15);
+      border: 1px solid rgba(244, 63, 94, 0.4);
+      color: #fda4af;
+    }
+    .flag-good {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #a7f3d0;
+    }
+    .flag-warn {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #fde68a;
+    }
+
+    .timeline-wrap {
+      background: rgba(10, 15, 29, 0.9);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.65rem 0.85rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+    .timeline-step {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      font-size: 0.68rem;
+      border-bottom: 1px solid rgba(30, 41, 59, 0.6);
+      padding-bottom: 0.4rem;
+    }
+    .timeline-step:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    .step-num {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.62rem;
+      flex-shrink: 0;
+    }
+    .step-chip {
+      background: rgba(99, 102, 241, 0.2);
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      color: #a5b4fc;
+      font-weight: 700;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      font-size: 0.62rem;
+      font-family: var(--font-mono);
+      flex-shrink: 0;
+    }
+    .step-target {
+      color: #e2e8f0;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      max-width: 260px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .step-desc {
+      color: var(--text-muted);
+      flex: 1;
+    }
+    .step-status {
+      font-weight: 700;
+      font-size: 0.6rem;
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+    .step-status.SUCCESS, .step-status.BREACH_CONFIRMED {
+      background: rgba(16, 185, 129, 0.15);
+      color: #a7f3d0;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+    .step-status.WARNING, .step-status.WARNING_NO_HTTPONLY {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fde68a;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+    }
   </style>
 </head>
 <body>
@@ -987,6 +1105,37 @@
             <td colspan="5" style="padding: 0;">
               <div class="drawer">
                 <div><strong>Description:</strong> ${escapeHtml(v.description)}</div>
+                ${v.cookie_audit ? `
+                  <div style="margin-top: 0.35rem;"><strong>Cookie Security Flag Audit:</strong></div>
+                  <div class="cookie-banner">
+                    <span class="flag-chip ${v.cookie_audit.http_only ? 'flag-good' : 'flag-bad'}">
+                      ${v.cookie_audit.http_only ? '✅ HttpOnly' : '❌ HttpOnly: Missing (Exposed to JS)'}
+                    </span>
+                    <span class="flag-chip ${v.cookie_audit.secure ? 'flag-good' : 'flag-bad'}">
+                      ${v.cookie_audit.secure ? '✅ Secure' : '❌ Secure: Missing (Cleartext HTTP)'}
+                    </span>
+                    <span class="flag-chip ${v.cookie_audit.same_site && v.cookie_audit.same_site.toLowerCase() === 'strict' ? 'flag-good' : 'flag-warn'}">
+                      🛡️ SameSite: ${escapeHtml(v.cookie_audit.same_site || 'None')}
+                    </span>
+                    <span class="flag-chip ${v.cookie_audit.accessible_via_js ? 'flag-bad' : 'flag-good'}">
+                      ${v.cookie_audit.accessible_via_js ? '⚠️ DOM Theft: TRUE' : '✅ DOM Theft: Blocked'}
+                    </span>
+                  </div>
+                ` : ''}
+                ${v.recorded_steps && v.recorded_steps.length ? `
+                  <div style="margin-top: 0.35rem;"><strong>Step-by-Step Exploit Playback Trace (TinyFish Browser):</strong></div>
+                  <div class="timeline-wrap">
+                    ${v.recorded_steps.map(s => `
+                      <div class="timeline-step">
+                        <span class="step-num">${s.step}</span>
+                        <span class="step-chip">${escapeHtml(s.action)}</span>
+                        <span class="step-target" title="${escapeHtml(s.target)}">${escapeHtml(s.target)}</span>
+                        <span class="step-desc">${escapeHtml(s.details)}</span>
+                        <span class="step-status ${escapeHtml(s.status)}">${escapeHtml(s.status)}</span>
+                      </div>
+                    `).join('')}
+                  </div>
+                ` : ''}
                 <div><strong>Reproducible Proof-of-Concept Command:</strong></div>
                 <div class="code-snippet">${escapeHtml(v.proof_of_concept?.exploit_command || '')}</div>
                 <div><strong>Leaked Proof Evidence:</strong></div>

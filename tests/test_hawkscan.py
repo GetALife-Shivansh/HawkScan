@@ -23,7 +23,9 @@ from hawkscan.dynamic_analyzer.crawler import DynamicCrawler
 from hawkscan.agents.idor_agent import IdorExploitAgent
 from hawkscan.agents.sqli_agent import SqliExploitAgent
 from hawkscan.agents.misconfig_agent import MisconfigExploitAgent
+from hawkscan.agents.cookie_agent import CookieExploitAgent
 from hawkscan.agents.proof_validator import ProofValidator
+from hawkscan.engine import TinyFishEngine, StepRecorder
 from hawkscan.reporting.sarif_generator import SarifGenerator
 from hawkscan.reporting.markdown_generator import MarkdownGenerator
 from hawkscan.reporting.patch_generator import PatchGenerator
@@ -57,6 +59,7 @@ class TestHawkScanPentester(unittest.TestCase):
             cfg.idor_protection_enabled = False
             cfg.sqli_protection_enabled = False
             cfg.cors_protection_enabled = False
+            cfg.cookie_protection_enabled = False
             db.commit()
         db.close()
         cls.server.should_exit = True
@@ -70,6 +73,7 @@ class TestHawkScanPentester(unittest.TestCase):
             cfg.idor_protection_enabled = False
             cfg.sqli_protection_enabled = False
             cfg.cors_protection_enabled = False
+            cfg.cookie_protection_enabled = False
             db.commit()
         db.close()
 
@@ -320,8 +324,11 @@ class TestHawkScanPentester(unittest.TestCase):
         vuln_ids = [v["vulnerability_id"] for v in dossier["verified_vulnerabilities"]]
         self.assertIn("HAWKSCAN-BOLA-001", vuln_ids)
         self.assertIn("HAWKSCAN-SQLI-001", vuln_ids)
+        self.assertIn("HAWKSCAN-COOKIE-001", vuln_ids)
         self.assertIn("sarif", dossier)
         self.assertIn("markdown_report", dossier)
+        # Verify step-by-step playback table is present in Markdown report
+        self.assertIn("Step-by-Step Exploit Playback Trace", dossier["markdown_report"])
 
     def test_10_patch_toggle_prevents_false_positives(self):
         """Phase 4 validation: patched application results in 0 verified vulnerabilities."""
@@ -331,6 +338,7 @@ class TestHawkScanPentester(unittest.TestCase):
         cfg.idor_protection_enabled = True
         cfg.sqli_protection_enabled = True
         cfg.cors_protection_enabled = True
+        cfg.cookie_protection_enabled = True
         db.commit()
         db.close()
 
@@ -342,6 +350,51 @@ class TestHawkScanPentester(unittest.TestCase):
         # With active defenses, zero exploits succeed -> zero false alarms reported!
         self.assertEqual(dossier["summary"]["verified_vulnerabilities"], 0)
         self.assertGreaterEqual(dossier["summary"]["discarded_false_positives"], 1)
+
+    def test_11_step_recorder(self):
+        """Verify StepRecorder maintains chronological action steps and markdown tables."""
+        recorder = StepRecorder(agent_name="TestAgent")
+        step1 = recorder.record_step("NAVIGATE", "http://127.0.0.1:8000", "Navigated to home", "SUCCESS")
+        step2 = recorder.record_step("INJECT_PAYLOAD", "/api/search", "Submitted payload", "BREACH_CONFIRMED")
+        self.assertEqual(step1["step"], 1)
+        self.assertEqual(step2["step"], 2)
+        steps = recorder.get_steps()
+        self.assertEqual(len(steps), 2)
+        table = recorder.to_markdown_table()
+        self.assertIn("| Step | Action |", table)
+        self.assertIn("NAVIGATE", table)
+        self.assertIn("INJECT_PAYLOAD", table)
+
+    def test_12_tinyfish_engine_loopback_and_lifecycle(self):
+        """Verify TinyFishEngine automatically handles loopback target and executes browser tasks."""
+        async def run_browser_test():
+            engine = TinyFishEngine(target_url=self.live_url)
+            self.assertTrue(engine._is_loopback(self.live_url))
+            mode = await engine.start()
+            self.assertEqual(mode, "LOCAL_PLAYWRIGHT")
+            ok = await engine.navigate(self.live_url)
+            self.assertTrue(ok)
+            js_res = await engine.execute_js("10 + 20")
+            self.assertEqual(js_res, 30)
+            await engine.close()
+
+        asyncio.run(run_browser_test())
+
+    def test_13_cookie_exploit_agent_breach(self):
+        """Verify CookieExploitAgent identifies missing HttpOnly and confirms client-side theft."""
+        async def run_cookie_test():
+            agent = CookieExploitAgent(target_url=self.live_url)
+            result = await agent.execute_exploit(session={}, static_surface={})
+            self.assertIsNotNone(result)
+            self.assertEqual(result["vulnerability_id"], "HAWKSCAN-COOKIE-001")
+            self.assertEqual(result["severity"], "HIGH")
+            self.assertIn("cookie_audit", result)
+            self.assertFalse(result["cookie_audit"]["http_only"])
+            self.assertTrue(result["cookie_audit"]["accessible_via_js"])
+            self.assertIn("recorded_steps", result)
+            self.assertGreaterEqual(len(result["recorded_steps"]), 3)
+
+        asyncio.run(run_cookie_test())
 
 
 if __name__ == "__main__":

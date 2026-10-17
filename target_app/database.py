@@ -3,7 +3,7 @@ Pre-seeds users, multi-tenant financial records, and security configuration.
 """
 
 import os
-from sqlalchemy import create_engine, Column, Integer, String, Text, Boolean, Float
+from sqlalchemy import create_engine, Column, Integer, String, Text, Boolean, Float, text
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "target.db")
@@ -40,10 +40,17 @@ class SecurityConfig(Base):
     idor_protection_enabled = Column(Boolean, default=False)
     sqli_protection_enabled = Column(Boolean, default=False)
     cors_protection_enabled = Column(Boolean, default=False)
-
+    cookie_protection_enabled = Column(Boolean, default=False)
 
 def init_db(force_insecure: bool = True):
     Base.metadata.create_all(bind=engine)
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("ALTER TABLE security_config ADD COLUMN cookie_protection_enabled BOOLEAN DEFAULT 0"))
+            conn.commit()
+    except Exception:
+        pass
+
     db = SessionLocal()
 
     # Seed or reset Security Configuration to vulnerable / insecure mode
@@ -53,7 +60,8 @@ def init_db(force_insecure: bool = True):
             id=1,
             idor_protection_enabled=False,
             sqli_protection_enabled=False,
-            cors_protection_enabled=False
+            cors_protection_enabled=False,
+            cookie_protection_enabled=False
         )
         db.add(cfg)
         db.commit()
@@ -61,6 +69,7 @@ def init_db(force_insecure: bool = True):
         cfg.idor_protection_enabled = False
         cfg.sqli_protection_enabled = False
         cfg.cors_protection_enabled = False
+        cfg.cookie_protection_enabled = False
         db.commit()
 
     # Seed Users

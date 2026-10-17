@@ -10,9 +10,10 @@
 ```
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/Tests-10%2F10%20Passing%20(100%25)-brightgreen.svg)](docs/TESTING.md)
+[![Tests](https://img.shields.io/badge/Tests-13%2F13%20Passing%20(100%25)-brightgreen.svg)](docs/TESTING.md)
 [![Standard](https://img.shields.io/badge/SARIF-OASIS%202.1.0-orange.svg)](docs/DATA_MODEL.md)
 [![Doctrine](https://img.shields.io/badge/Doctrine-No%20Exploit%2C%20No%20Report-red.svg)](docs/decisions/0002-proof-by-exploitation-doctrine.md)
+[![TinyFish](https://img.shields.io/badge/Browser%20Engine-TinyFish%20CDP%20%2B%20Playwright-blueviolet.svg)](docs/decisions/0006-tinyfish-browser-agent-and-cookie-exploitation.md)
 [![License](https://img.shields.io/badge/License-Defensive%20Security%20Research-lightgrey.svg)](docs/SECURITY.md)
 
 **Autonomous White-Box AI Pentester · Proof-by-Exploitation ("No Exploit, No Report")**
@@ -26,7 +27,8 @@
 HawkScan operates on a strict **"Proof-by-Exploitation" ("No Exploit, No Report")** doctrine:
 - **White-Box AST Route Reconnaissance**: Analyzes local source code repository to discover web routes, query parameters, data models, and high-probability attack vectors.
 - **Dynamic Crawling & Session Acquisition**: Connects to the running application, maps live endpoints, and authenticates legitimate test credentials.
-- **Parallel Multi-Agent Exploitation**: Asynchronously deploys specialized exploit agents targeting Broken Object Level Authorization (IDOR / BOLA), SQL Injection (SQLi), and security misconfigurations.
+- **Parallel Multi-Agent Exploitation**: Asynchronously deploys specialized exploit agents targeting Broken Object Level Authorization (IDOR / BOLA), SQL Injection (SQLi), CORS reflection, and Cookie Security Flaws.
+- **TinyFish Browser Automation & Action Playback Recorder**: Dual-engine browser automation (TinyFish Cloud CDP + Local Playwright Chromium) records chronological step-by-step exploit playback traces and executes client-side JavaScript (`document.cookie`) to verify session theft.
 - **Proof-by-Exploitation Validation**: Evaluates exploit attempts against live HTTP response status codes and exfiltrated payloads. **Any theoretical finding that fails live exploitation is suppressed from the verified findings.**
 - **Actionable Remediation Artifacts**: Generates standardized OASIS SARIF 2.1.0 schemas, comprehensive Markdown audit reports with reproducible `curl` commands, and Git diff patches.
 
@@ -44,10 +46,13 @@ flowchart TD
         C1[DynamicCrawler: Live Target Prober] --> A1[Session Acquisition & Cookie Extraction]
     end
 
-    subgraph P3["Phase 3: Multi-Agent Exploitation"]
+    subgraph P3["Phase 3: Multi-Agent Exploitation & Browser Probing"]
         E1[IdorExploitAgent: BOLA Probes]
         E2[SqliExploitAgent: SQL Syntax Injections]
         E3[MisconfigExploitAgent: CORS Probes]
+        E4[CookieExploitAgent: DOM Theft via TinyFish]
+        TF[TinyFish Engine: Cloud CDP & Playwright]
+        SR[StepRecorder: Action Playback Logs]
     end
 
     subgraph P4["Phase 4: Proof-by-Exploitation"]

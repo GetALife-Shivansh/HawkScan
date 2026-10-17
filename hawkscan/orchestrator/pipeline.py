@@ -14,6 +14,7 @@ from hawkscan.dynamic_analyzer.crawler import DynamicCrawler
 from hawkscan.agents.idor_agent import IdorExploitAgent
 from hawkscan.agents.sqli_agent import SqliExploitAgent
 from hawkscan.agents.misconfig_agent import MisconfigExploitAgent
+from hawkscan.agents.cookie_agent import CookieExploitAgent
 from hawkscan.agents.proof_validator import ProofValidator
 from hawkscan.reporting.sarif_generator import SarifGenerator
 from hawkscan.reporting.markdown_generator import MarkdownGenerator
@@ -89,13 +90,15 @@ class HawkScanPipeline:
         idor_agent = IdorExploitAgent(target_url=self.target_url, emit_fn=sync_emit)
         sqli_agent = SqliExploitAgent(target_url=self.target_url, emit_fn=sync_emit)
         misconfig_agent = MisconfigExploitAgent(target_url=self.target_url, emit_fn=sync_emit)
+        cookie_agent = CookieExploitAgent(target_url=self.target_url, emit_fn=sync_emit)
 
         # Execute live exploit agents concurrently
         idor_task = idor_agent.execute_exploit(session, surface)
         sqli_task = sqli_agent.execute_exploit(session, surface)
         misconfig_task = misconfig_agent.execute_exploit(session, surface)
+        cookie_task = cookie_agent.execute_exploit(session, surface)
 
-        exploit_results = await asyncio.gather(idor_task, sqli_task, misconfig_task)
+        exploit_results = await asyncio.gather(idor_task, sqli_task, misconfig_task, cookie_task)
         await self.emit(
             "exploitation",
             "phase_completed",

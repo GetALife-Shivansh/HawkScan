@@ -58,7 +58,8 @@ HawkScan is an autonomous white-box artificial intelligence penetration testing 
 | **HawkScan Core** | `hawkscan/` | Orchestrates 5-phase pentesting pipeline, static AST scanning, dynamic crawling, multi-agent exploit probes, and proof validation. | Python 3.14, FastAPI, asyncio, httpx, pydantic |
 | **Static Analyzer** | `hawkscan/static_analyzer/` | Discovers routes, parameters, ORM calls, and suspicious code patterns from local source files without execution. | Python AST (`ast`), regex |
 | **Dynamic Analyzer** | `hawkscan/dynamic_analyzer/` | Connects to running target instance, authenticates test user, maps live HTTP response headers, and discovers endpoints. | httpx (async) |
-| **Exploit Agents** | `hawkscan/agents/` | Executes targeted non-destructive exploit payloads (IDOR horizontal tenant leakage, SQL injection syntax breakout, CORS origin reflection). | Python, httpx |
+| **Exploit Agents** | `hawkscan/agents/` | Executes targeted non-destructive exploit payloads (IDOR horizontal tenant leakage, SQL injection syntax breakout, CORS origin reflection, and Cookie security auditing). | Python, httpx |
+| **Browser & Step Engine** | `hawkscan/engine/` | Dual-engine browser automation backed by TinyFish Cloud CDP and local Playwright Chromium; chronological StepRecorder. | Playwright, CDP, websockets |
 | **Proof Validator** | `hawkscan/agents/proof_validator.py` | Enforces "No Exploit, No Report" rule: discards theoretical findings that failed live exploitation. | Python |
 | **Reporting Engine** | `hawkscan/reporting/` | Generates standardized OASIS SARIF 2.1.0, audit Markdown reports, and Git remediation unified diffs. | Python, SARIF 2.1.0 |
 | **Control Plane & UI** | `hawkscan/server/` | Serves REST endpoints (`/api/scan/start`, `/api/scan/report`, `/api/export/*`), SSE telemetry stream (`/api/stream`), and War Room UI. | FastAPI, HTML5/CSS3/Vanilla JS |

@@ -27,7 +27,7 @@ HawkScan employs an automated 5-phase testing strategy strictly adhering to the 
 
 ---
 
-## 3. Verified Test Results (Ran 10 tests in 1.058s - 100% Passing)
+## 3. Verified Test Results (Ran 13 tests in 4.793s - 100% Passing)
 
 | Test ID & Method | Focus Area | Result | Verified Runtime Output / Assertions | Verification Date |
 | :--- | :--- | :--- | :--- | :--- |
@@ -39,8 +39,11 @@ HawkScan employs an automated 5-phase testing strategy strictly adhering to the 
 | `test_06_proof_validator_no_exploit_no_report` | Phase 4 Proof Validator | **PASSED** | Proven breach with working PoC is retained (`HAWKSCAN-TEST-001`). Unproven candidate returning HTTP 403 is discarded as `DISCARDED_FALSE_POSITIVE`. | 2026-10-17 |
 | `test_07_sarif_and_markdown_generator` | Phase 5 Artifact Generation | **PASSED** | Validates OASIS SARIF 2.1.0 schema with driver name "HawkScan", Markdown audit report with reproducible curl commands, and Git diff patches for `target_app/routes/records.py`. | 2026-10-17 |
 | `test_08_hawkscan_server_api_and_ui` | HawkScan Control Plane API | **PASSED** | `GET /api/health` returns 200 OK with service "HawkScan AI Pentester Core". `GET /` serves HawkScan War Room UI. `POST /api/scan/start`, `GET /api/scan/report`, `GET /api/export/*` verified. | 2026-10-17 |
-| `test_09_full_pipeline_end_to_end` | Phases 1-5 Live Execution | **PASSED** | Full autonomous pipeline executed against live background server. Verified 3 proven breaches (`HAWKSCAN-BOLA-001` CRITICAL, `HAWKSCAN-SQLI-001` HIGH, `HAWKSCAN-CORS-001` MEDIUM). | 2026-10-17 |
+| `test_09_full_pipeline_end_to_end` | Phases 1-5 Live Execution | **PASSED** | Full autonomous pipeline executed against live background server. Verified 4 proven breaches (`HAWKSCAN-BOLA-001`, `HAWKSCAN-SQLI-001`, `HAWKSCAN-CORS-001`, `HAWKSCAN-COOKIE-001`). Includes step playback traces. | 2026-10-17 |
 | `test_10_patch_toggle_prevents_false_positives` | "No Exploit, No Report" | **PASSED** | Patched target application results in 0 verified vulnerabilities reported and 1+ discarded false positives. Zero false alarms under active defense. | 2026-10-17 |
+| `test_11_step_recorder` | Chronological Action Trace | **PASSED** | StepRecorder sequentially logs actions, numbering each step, capturing target, details, and outcome status badges. Generates GitHub Flavored Markdown table. | 2026-10-17 |
+| `test_12_tinyfish_engine_loopback_and_lifecycle` | Dual-Engine Browser Automation | **PASSED** | TinyFishEngine detects loopback target, launches local headless Playwright Chromium, navigates, executes JS evaluation, extracts cookies, and tears down cleanly. | 2026-10-17 |
+| `test_13_cookie_exploit_agent_breach` | Cookie Security & Session Theft | **PASSED** | CookieExploitAgent identifies missing HttpOnly attribute, executes `document.cookie` in DOM via TinyFish, steals session token, and proves replay against `/api/auth/me`. | 2026-10-17 |
 
 ---
 

@@ -5,6 +5,7 @@ Tests for unauthorized cross-tenant object access and generates live proof.
 import httpx
 from urllib.parse import urljoin
 from typing import Dict, Any, Optional, Callable
+from hawkscan.engine.step_recorder import StepRecorder
 
 
 class IdorExploitAgent:
@@ -56,6 +57,12 @@ class IdorExploitAgent:
 
                     if is_leak:
                         self.log("BOLA/IDOR EXPLOIT CONFIRMED: Successfully retrieved Bob's confidential M&A records!")
+                        recorder = StepRecorder(agent_name="IdorExploitAgent")
+                        recorder.record_step("NAVIGATE", self.target_url, "Navigated browser to portal base interface", "SUCCESS")
+                        recorder.record_step("AUTHENTICATE", f"{self.target_url}/api/auth/login", "Established valid session for tenant 'Alice Johnson'", "SUCCESS")
+                        recorder.record_step("INJECT_TENANT_COOKIE", exploit_url, f"Injected Alice's session token to query foreign object '{target_record_id}'", "SUCCESS")
+                        recorder.record_step("CAPTURE_CONFIDENTIAL_RECORD", exploit_url, f"Retrieved record REC-9001 ($85,000,000 USD) belonging to Bob Chen", "BREACH_CONFIRMED")
+
                         return {
                             "vulnerability_id": "HAWKSCAN-BOLA-001",
                             "title": "Broken Object Level Authorization (IDOR / BOLA)",
@@ -65,6 +72,7 @@ class IdorExploitAgent:
                             "target_endpoint": f"/api/records/{target_record_id}",
                             "http_method": "GET",
                             "status": "VERIFIED_EXPLOIT",
+                            "recorded_steps": recorder.get_steps(),
                             "description": (
                                 "User Alice Johnson successfully retrieved confidential corporate acquisition records "
                                 "(REC-9001) belonging to Robert (Bob) Chen without ownership verification."

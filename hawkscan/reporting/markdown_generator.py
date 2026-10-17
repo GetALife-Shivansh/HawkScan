@@ -81,6 +81,39 @@ class MarkdownGenerator:
                 "```",
                 f"> **Proof Summary:** {poc.get('evidence_summary', 'Exploit succeeded.')}",
                 "",
+            ])
+
+            # Render Cookie Security Audit Matrix if available
+            cookie_audit = v.get("cookie_audit")
+            if cookie_audit:
+                h_only = "✅ Present" if cookie_audit.get("http_only") else "❌ Missing (Vulnerable)"
+                sec = "✅ Present" if cookie_audit.get("secure") else "❌ Missing (Insecure HTTP)"
+                js_acc = "⚠️ TRUE (Accessible via DOM)" if cookie_audit.get("accessible_via_js") else "✅ False (Protected)"
+                lines.extend([
+                    "#### Cookie Security Audit Matrix",
+                    "| Cookie Name | HttpOnly | Secure | SameSite | Accessible via JS (DOM) |",
+                    "| :--- | :---: | :---: | :---: | :---: |",
+                    f"| `{cookie_audit.get('cookie_name')}` | {h_only} | {sec} | `{cookie_audit.get('same_site', 'None')}` | {js_acc} |",
+                    ""
+                ])
+
+            # Render Step-by-Step Playback Trace if recorded
+            recorded_steps = v.get("recorded_steps", [])
+            if recorded_steps:
+                lines.extend([
+                    "#### Step-by-Step Exploit Playback Trace (TinyFish Browser Agent)",
+                    "| Step | Action | Target / Endpoint | Details | Outcome |",
+                    "| :---: | :--- | :--- | :--- | :---: |",
+                ])
+                for s in recorded_steps:
+                    st = s.get("status", "SUCCESS")
+                    badge = f"✅ `{st}`" if st in ("SUCCESS", "BREACH_CONFIRMED") else (f"⚠️ `{st}`" if "WARN" in st else f"`{st}`")
+                    c_target = str(s.get("target", "")).replace("|", "\\|")
+                    c_details = str(s.get("details", "")).replace("|", "\\|")
+                    lines.append(f"| {s.get('step')} | **{s.get('action')}** | `{c_target}` | {c_details} | {badge} |")
+                lines.append("")
+
+            lines.extend([
                 "#### Developer Remediation Guidance",
                 f"{remediation.get('guidance', 'Apply defensive access control checks.')}",
                 "",

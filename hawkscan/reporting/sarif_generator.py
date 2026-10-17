@@ -62,7 +62,9 @@ class SarifGenerator:
                 "properties": {
                     "severity": vuln.get("severity"),
                     "exploit_command": poc.get("exploit_command", ""),
-                    "target_url": target_url
+                    "target_url": target_url,
+                    **({"cookie_audit": vuln["cookie_audit"]} if vuln.get("cookie_audit") else {}),
+                    **({"recorded_steps": vuln["recorded_steps"]} if vuln.get("recorded_steps") else {})
                 }
             })
 

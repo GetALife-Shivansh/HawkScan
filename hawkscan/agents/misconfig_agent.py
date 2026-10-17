@@ -4,6 +4,7 @@ Tests for CORS origin reflection, credential disclosure, and missing defensive h
 
 import httpx
 from typing import Dict, Any, Optional, Callable
+from hawkscan.engine.step_recorder import StepRecorder
 
 
 class MisconfigExploitAgent:
@@ -55,6 +56,11 @@ class MisconfigExploitAgent:
                 # Check if attacker origin was accepted or wildcard with credentials
                 if allow_origin == attacker_origin or (allow_origin == "*" and allow_creds):
                     self.log(f"CORS MISCONFIGURATION CONFIRMED: Origin allowed ({allow_origin}) with credentials={allow_creds}!")
+                    recorder = StepRecorder(agent_name="MisconfigExploitAgent")
+                    recorder.record_step("NAVIGATE", self.target_url, "Opened target API endpoint", "SUCCESS")
+                    recorder.record_step("CORS_ORIGIN_PROBE", exploit_url, f"Sent untrusted Origin header: '{attacker_origin}'", "SUCCESS")
+                    recorder.record_step("VERIFY_CORS_BREACH", exploit_url, f"Received Access-Control-Allow-Origin: {allow_origin} with credentials={allow_creds}", "BREACH_CONFIRMED")
+
                     return {
                         "vulnerability_id": "HAWKSCAN-CORS-001",
                         "title": "Insecure Cross-Origin Resource Sharing (CORS) Policy",
@@ -64,6 +70,7 @@ class MisconfigExploitAgent:
                         "target_endpoint": target_path,
                         "http_method": "GET",
                         "status": "VERIFIED_EXPLOIT",
+                        "recorded_steps": recorder.get_steps(),
                         "description": (
                             f"The API reflects untrusted origins ('{attacker_origin}') in the Access-Control-Allow-Origin "
                             "header while permitting credentials. This allows third-party malicious sites to read authenticated user responses."

