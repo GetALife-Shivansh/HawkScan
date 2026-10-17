@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HawkScan · Autonomous White-Box AI Pentester</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #070a12;
+      --bg-card: #0d1322;
+      --bg-card-sub: #141c30;
+      --border: #1e293b;
+      --border-accent: #334155;
+      --cyan: #06b6d4;
+      --cyan-glow: rgba(6, 182, 212, 0.25);
+      --emerald: #10b981;
+      --emerald-glow: rgba(16, 185, 129, 0.25);
+      --rose: #f43f5e;
+      --rose-glow: rgba(244, 63, 94, 0.25);
+      --amber: #f59e0b;
+      --indigo: #6366f1;
+      --indigo-glow: rgba(99, 102, 241, 0.25);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-sub: #64748b;
+      --font-sans: 'Plus Jakarta Sans', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Top Command Header */
+    header {
+      background: rgba(13, 19, 34, 0.96);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      padding: 0.55rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 50;
+      flex-shrink: 0;
+      gap: 0.85rem;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-shrink: 0;
+    }
+
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #4f46e5, #06b6d4);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+      box-shadow: 0 0 14px var(--indigo-glow);
+    }
+
+    .brand-titles h1 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .brand-titles h1 span {
+      background: linear-gradient(90deg, #818cf8, #38bdf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-titles p {
+      font-size: 0.64rem;
+      color: var(--text-sub);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .omnibar-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex: 1;
+      max-width: 650px;
+    }
+
+    .input-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(7, 10, 18, 0.9);
+      border: 1px solid var(--border);
+      padding: 0.25rem 0.65rem;
+      border-radius: 9999px;
+      flex: 1;
+      transition: all 0.2s;
+    }
+    .input-pill:focus-within {
+      border-color: #38bdf8;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+    }
+    .input-label {
+      font-size: 0.62rem;
+      font-weight: 800;
+      color: var(--text-sub);
+      white-space: nowrap;
+    }
+    .omnibar-input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-main);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      width: 100%;
+    }
+
+    .top-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      flex-shrink: 0;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.25rem 0.65rem;
+      border-radius: 9999px;
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid var(--border);
+      font-size: 0.68rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+    }
+    .status-badge .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--text-sub);
+    }
+    .status-badge.running .dot {
+      background: #38bdf8;
+      box-shadow: 0 0 10px #38bdf8;
+      animation: pulse 1.2s infinite;
+    }
+    .status-badge.running { color: #38bdf8; border-color: rgba(56, 189, 248, 0.4); }
+
+    .status-badge.completed .dot { background: #f43f5e; box-shadow: 0 0 10px #f43f5e; }
+    .status-badge.completed { color: #f43f5e; border-color: rgba(244, 63, 94, 0.4); }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .btn-launch {
+      background: linear-gradient(135deg, #4f46e5, #0284c7);
+      border: none;
+      color: #fff;
+      padding: 0.38rem 0.95rem;
+      border-radius: 8px;
+      font-size: 0.74rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      box-shadow: 0 0 14px var(--indigo-glow);
+      transition: all 0.2s;
+    }
+    .btn-launch:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+    }
+    .btn-launch:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .btn-exit {
+      background: rgba(244, 63, 94, 0.12);
+      border: 1px solid rgba(244, 63, 94, 0.35);
+      color: #fda4af;
+      padding: 0.38rem 0.85rem;
+      border-radius: 8px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.15s;
+    }
+    .btn-exit:hover { background: rgba(244, 63, 94, 0.25); color: #fff; }
+
+    /* HawkScan 5-Phase Pipeline Stepper */
+    .stepper-ribbon {
+      background: #090e1a;
+      border-bottom: 1px solid var(--border);
+      padding: 0.45rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.65rem;
+      flex-shrink: 0;
+    }
+
+    .step-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--text-sub);
+      padding: 0.2rem 0.55rem;
+      border-radius: 6px;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid transparent;
+      transition: all 0.2s;
+    }
+    .step-item.active {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border-color: rgba(56, 189, 248, 0.4);
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+    }
+    .step-item.done {
+      color: #34d399;
+      background: rgba(16, 185, 129, 0.1);
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+    .step-num {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.62rem;
+      font-family: var(--font-mono);
+    }
+
+    /* Live Summary Metrics Bar */
+    .metrics-bar {
+      background: #040711;
+      border-bottom: 1px solid var(--border);
+      padding: 0.4rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+    }
+
+    .metric-badges {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .m-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      font-weight: 800;
+      font-size: 0.68rem;
+    }
+    .m-breach { background: rgba(244, 63, 94, 0.2); color: #fda4af; border: 1px solid rgba(244, 63, 94, 0.4); }
+    .m-discard { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.3); }
+    .m-live { background: rgba(16, 185, 129, 0.2); color: #a7f3d0; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .m-static { background: rgba(99, 102, 241, 0.2); color: #c7d2fe; border: 1px solid rgba(99, 102, 241, 0.4); }
+
+    /* Workspace */
+    .workspace {
+      flex: 1;
+      display: flex;
+      height: calc(100vh - 128px);
+      overflow: hidden;
+    }
+
+    /* Left Pane */
+    .left-pane {
+      flex: 1;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      background: #03050c;
+      overflow: hidden;
+    }
+
+    .pane-tabs {
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      padding: 0 0.85rem;
+      gap: 0.35rem;
+      flex-shrink: 0;
+    }
+
+    .pane-tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.55rem 0.75rem;
+      font-size: 0.73rem;
+      font-weight: 700;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .pane-tab-btn:hover { color: var(--text-main); }
+    .pane-tab-btn.active { color: #38bdf8; border-bottom-color: #38bdf8; }
+
+    .left-view {
+      flex: 1;
+      display: none;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    .left-view.active { display: flex; }
+
+    .webview-bar {
+      background: rgba(15, 23, 42, 0.7);
+      border-bottom: 1px solid var(--border);
+      padding: 0.45rem 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.7rem;
+      gap: 0.5rem;
+    }
+    .addr-box {
+      background: #02040a;
+      border: 1px solid var(--border);
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--text-main);
+      flex: 1;
+    }
+
+    iframe { width: 100%; height: 100%; border: none; background: #ffffff; }
+
+    /* Static Surface List */
+    .surface-view { padding: 1rem; display: flex; flex-direction: column; gap: 0.65rem; }
+    .route-card {
+      background: var(--bg-card-sub);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.6rem 0.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+    }
+    .method-badge {
+      font-size: 0.62rem;
+      font-weight: 800;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+    }
+    .method-GET { background: rgba(56, 189, 248, 0.2); color: #38bdf8; }
+    .method-POST { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+
+    /* Right Pane */
+    .right-pane {
+      flex: 1.25;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-dark);
+      overflow: hidden;
+    }
+
+    /* SSE Thought Stream Terminal */
+    .telemetry-panel {
+      height: 165px;
+      background: #02040a;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      flex-shrink: 0;
+    }
+    .telemetry-header {
+      background: var(--bg-card);
+      padding: 0.35rem 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--text-muted);
+      font-size: 0.68rem;
+      font-weight: 700;
+    }
+    .telemetry-logs {
+      flex: 1;
+      padding: 0.55rem 1rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .log-row { display: flex; align-items: flex-start; gap: 0.5rem; line-height: 1.4; }
+    .log-time { color: var(--text-sub); font-size: 0.66rem; flex-shrink: 0; }
+    .stage-pill {
+      font-size: 0.62rem;
+      font-weight: 800;
+      padding: 0.08rem 0.35rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+    .stage-static_recon { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; }
+    .stage-dynamic_recon { background: rgba(56, 189, 248, 0.2); color: #7dd3fc; }
+    .stage-exploitation { background: rgba(244, 63, 94, 0.2); color: #fda4af; }
+    .stage-validation { background: rgba(245, 158, 11, 0.2); color: #fde68a; }
+    .stage-reporting { background: rgba(16, 185, 129, 0.2); color: #a7f3d0; }
+    .stage-system { background: rgba(148, 163, 184, 0.2); color: #e2e8f0; }
+
+    /* Right Tabs Content */
+    .right-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+    }
+    .right-tab-pane { display: none; }
+    .right-tab-pane.active { display: block; }
+
+    /* Vulnerability Table */
+    .vuln-table-wrap {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--bg-card);
+    }
+    .vuln-table { width: 100%; border-collapse: collapse; font-size: 0.73rem; }
+    .vuln-table th {
+      background: var(--bg-card-sub);
+      padding: 0.5rem 0.75rem;
+      font-size: 0.65rem;
+      font-weight: 800;
+      color: var(--text-sub);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--border);
+    }
+    .vuln-table td {
+      padding: 0.65rem 0.75rem;
+      border-bottom: 1px solid rgba(30, 41, 59, 0.5);
+    }
+    .sev-tag {
+      font-size: 0.62rem;
+      font-weight: 800;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+      display: inline-block;
+    }
+    .sev-CRITICAL { background: rgba(244, 63, 94, 0.2); color: #fda4af; border: 1px solid rgba(244, 63, 94, 0.4); }
+    .sev-HIGH     { background: rgba(245, 158, 11, 0.2); color: #fde68a; border: 1px solid rgba(245, 158, 11, 0.4); }
+    .sev-MEDIUM   { background: rgba(56, 189, 248, 0.2); color: #bae6fd; border: 1px solid rgba(56, 189, 248, 0.4); }
+
+    .drawer {
+      background: #02040a;
+      padding: 0.85rem;
+      border-top: 1px dashed var(--border);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .code-snippet {
+      background: #090e1a;
+      border: 1px solid var(--border);
+      padding: 0.55rem;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: #e2e8f0;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .btn-action {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      transition: all 0.15s;
+    }
+    .btn-action:hover { background: rgba(56, 189, 248, 0.15); border-color: #38bdf8; color: #38bdf8; }
+  </style>
+</head>
+<body>
+
+  <!-- Top Command Header -->
+  <header>
+    <div class="brand-group">
+      <div class="brand-logo">🔷</div>
+      <div class="brand-titles">
+        <h1>HAWKSCAN<span>·AI</span></h1>
+        <p>AUTONOMOUS WHITE-BOX AI PENTESTER · PROOF-BY-EXPLOITATION</p>
+      </div>
+    </div>
+
+    <!-- Omnibar: Target URL + Local Repo Path -->
+    <div class="omnibar-group">
+      <div class="input-pill">
+        <span class="input-label">-u URL:</span>
+        <input
+          type="text"
+          id="targetUrlInput"
+          class="omnibar-input"
+          value="http://127.0.0.1:8000"
+          placeholder="http://target-app.local:8000"
+          onkeydown="if(event.key==='Enter') startPentest()"
+        />
+      </div>
+      <div class="input-pill">
+        <span class="input-label">-r REPO:</span>
+        <input
+          type="text"
+          id="repoPathInput"
+          class="omnibar-input"
+          value="."
+          placeholder="/path/to/local/repo"
+          onkeydown="if(event.key==='Enter') startPentest()"
+        />
+      </div>
+    </div>
+
+    <div class="top-controls">
+      <!-- Target Security Posture Widget -->
+      <div class="posture-control" style="display:flex;align-items:center;gap:0.35rem;background:rgba(255,255,255,0.04);padding:0.25rem 0.6rem;border-radius:8px;border:1px solid var(--border);">
+        <span style="font-size:0.63rem;color:var(--text-sub);font-weight:700;text-transform:uppercase;">Target State:</span>
+        <span id="postureBadge" style="font-size:0.68rem;font-weight:800;padding:0.18rem 0.45rem;border-radius:4px;background:rgba(244,63,94,0.18);color:#fda4af;border:1px solid rgba(244,63,94,0.4);display:inline-flex;align-items:center;gap:0.25rem;">
+          <span style="font-size:0.55rem;">🔴</span> INSECURE
+        </span>
+        <button id="btnMakeInsecure" onclick="setTargetSecurity(false)" title="Make Target App Insecure (Enable IDOR & SQLi flaws)" style="background:rgba(244,63,94,0.14);border:1px solid rgba(244,63,94,0.35);color:#fda4af;padding:0.22rem 0.5rem;border-radius:5px;font-size:0.65rem;font-weight:700;cursor:pointer;">
+          ⚡ Make Insecure
+        </button>
+        <button id="btnMakeSecure" onclick="setTargetSecurity(true)" title="Apply Security Patches (Mitigate IDOR & SQLi)" style="background:rgba(16,185,129,0.14);border:1px solid rgba(16,185,129,0.35);color:#6ee7b7;padding:0.22rem 0.5rem;border-radius:5px;font-size:0.65rem;font-weight:700;cursor:pointer;">
+          🛡️ Apply Patches
+        </button>
+      </div>
+
+      <div id="statusBadge" class="status-badge">
+        <span class="dot">●</span>
+        <span id="statusText">IDLE</span>
+      </div>
+
+      <button id="btnLaunch" class="btn-launch" onclick="startPentest()">
+        <span>⚡</span> RUN PENTEST
+      </button>
+
+      <button class="btn-exit" onclick="confirmShutdown()" title="Shut down servers (Ctrl+Q)">
+        <span>🛑</span> QUIT
+      </button>
+    </div>
+  </header>
+
+  <!-- 5-Phase Pipeline Stepper -->
+  <div class="stepper-ribbon">
+    <div class="step-item" id="step-1">
+      <span class="step-num">1</span>
+      <span>Static Code Recon</span>
+    </div>
+    <div style="color: var(--text-sub); font-size: 0.65rem;">→</div>
+    <div class="step-item" id="step-2">
+      <span class="step-num">2</span>
+      <span>Dynamic Target Crawl</span>
+    </div>
+    <div style="color: var(--text-sub); font-size: 0.65rem;">→</div>
+    <div class="step-item" id="step-3">
+      <span class="step-num">3</span>
+      <span>Autonomous Exploitation</span>
+    </div>
+    <div style="color: var(--text-sub); font-size: 0.65rem;">→</div>
+    <div class="step-item" id="step-4">
+      <span class="step-num">4</span>
+      <span>Proof-by-Exploitation</span>
+    </div>
+    <div style="color: var(--text-sub); font-size: 0.65rem;">→</div>
+    <div class="step-item" id="step-5">
+      <span class="step-num">5</span>
+      <span>SARIF &amp; Reports</span>
+    </div>
+  </div>
+
+  <!-- Summary Metrics Bar -->
+  <div class="metrics-bar">
+    <div class="metric-badges">
+      <span class="m-pill m-breach">🔴 VERIFIED BREACHES: <span id="mBreaches">0</span></span>
+      <span class="m-pill m-discard">🛡️ FALSE POSITIVES DISCARDED: <span id="mDiscarded">0</span></span>
+      <span class="m-pill m-live">🌐 LIVE ENDPOINTS: <span id="mLive">0</span></span>
+      <span class="m-pill m-static">🗺️ STATIC ROUTES: <span id="mStatic">0</span></span>
+    </div>
+    <div style="color: var(--text-sub); display: flex; gap: 0.85rem;">
+      <span>SCAN TIME: <span id="mDuration">0.0s</span></span>
+      <span>STATUS: <span id="mStateLabel" style="color: #38bdf8;">READY</span></span>
+    </div>
+  </div>
+
+  <!-- Main Workspace -->
+  <div class="workspace">
+
+    <!-- Left Pane -->
+    <div class="left-pane">
+      <div class="pane-tabs">
+        <button class="pane-tab-btn active" onclick="switchLeftTab('left-web')">🌐 Target Live Webview</button>
+        <button class="pane-tab-btn" onclick="switchLeftTab('left-surface')">🗺️ Static Code Surface (<span id="tabRouteCount">0</span>)</button>
+      </div>
+
+      <!-- Left View 1: Target Live Webview -->
+      <div id="left-web" class="left-view active">
+        <div class="webview-bar">
+          <div class="addr-box">🔒 <span id="frameAddr">http://127.0.0.1:8000</span></div>
+          <button class="btn-action" onclick="reloadFrame()">↻ Reload</button>
+          <a class="btn-action" id="extLink" href="http://127.0.0.1:8000" target="_blank">↗ New Tab</a>
+        </div>
+        <div style="flex: 1; position: relative;">
+          <iframe id="targetFrame" src="http://127.0.0.1:8000" title="Target Live Application"></iframe>
+        </div>
+      </div>
+
+      <!-- Left View 2: Static Code Surface -->
+      <div id="left-surface" class="left-view">
+        <div class="surface-view" id="surfaceContainer">
+          <div style="text-align: center; color: var(--text-sub); padding: 2rem; font-size: 0.74rem;">
+            Run HawkScan pentest to extract static code routes and attack vectors.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Pane: Telemetry Stream & Verified Findings -->
+    <div class="right-pane">
+      <!-- Real-time SSE Telemetry -->
+      <div class="telemetry-panel">
+        <div class="telemetry-header">
+          <span>⚡ HAWKSCAN AGENT TELEMETRY STREAM</span>
+          <span style="font-size: 0.65rem; color: #38bdf8;">LIVE SSE FEED</span>
+        </div>
+        <div class="telemetry-logs" id="telemetryLogs">
+          <div class="log-row">
+            <span class="log-time">[00:00:00]</span>
+            <span class="stage-pill stage-system">SYSTEM</span>
+            <span>HawkScan Autonomous AI Pentester initialized. Standing by.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Pane Tabs -->
+      <div class="pane-tabs">
+        <button class="pane-tab-btn active" onclick="switchRightTab('tab-findings')">📋 Verified Vulnerabilities (<span id="findingsTabCount">0</span>)</button>
+        <button class="pane-tab-btn" onclick="switchRightTab('tab-suppressed')">🛡️ Suppressed False Positives (<span id="suppressedTabCount">0</span>)</button>
+        <button class="pane-tab-btn" onclick="switchRightTab('tab-patches')">🛠️ Remediation Patches</button>
+        <button class="pane-tab-btn" onclick="switchRightTab('tab-exports')">📦 SARIF &amp; Exports</button>
+      </div>
+
+      <div class="right-content">
+
+        <!-- Tab 1: Verified Vulnerabilities (Proof-by-Exploitation) -->
+        <div id="tab-findings" class="right-tab-pane active">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <div style="font-size: 0.72rem; color: var(--text-muted);">
+              Enforcing doctrine: <strong>"No Exploit, No Report"</strong>. Only breaches proven by working execution:
+            </div>
+            <div style="display: flex; gap: 0.35rem;">
+              <a href="/api/export/sarif" download class="btn-action">📥 SARIF 2.1.0</a>
+              <a href="/api/export/markdown" download class="btn-action">📄 Markdown</a>
+            </div>
+          </div>
+
+          <div class="vuln-table-wrap">
+            <table class="vuln-table">
+              <thead>
+                <tr>
+                  <th style="width: 80px;">Severity</th>
+                  <th>Vulnerability Title</th>
+                  <th style="width: 140px;">CWE / OWASP</th>
+                  <th style="width: 130px;">Endpoint</th>
+                  <th style="width: 70px; text-align: right;">PoC</th>
+                </tr>
+              </thead>
+              <tbody id="findingsTableBody">
+                <tr>
+                  <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-sub);">
+                    No verified breaches yet. Click <strong>RUN PENTEST</strong> to begin.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tab 2: Suppressed False Positives -->
+        <div id="tab-suppressed" class="right-tab-pane">
+          <div style="font-size: 0.74rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+            Theoretical warnings and static code hints discarded because live exploitation could not achieve a confirmed breach:
+          </div>
+          <div id="suppressedContainer" style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <div style="text-align: center; color: var(--text-sub); padding: 2rem; font-size: 0.74rem;">
+              No false positives logged.
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3: Remediation Git Diffs -->
+        <div id="tab-patches" class="right-tab-pane">
+          <div style="font-size: 0.74rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+            Verified code patches resolving the root cause of confirmed vulnerabilities:
+          </div>
+          <div id="patchesContainer" style="display: flex; flex-direction: column; gap: 0.85rem;">
+            <div style="text-align: center; color: var(--text-sub); padding: 2rem; font-size: 0.74rem;">
+              Run pentest to generate unified code patches.
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 4: SARIF & Exports -->
+        <div id="tab-exports" class="right-tab-pane">
+          <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem;">
+            <div style="font-size: 0.95rem; font-weight: 700; color: #38bdf8;">
+              📦 CI/CD Security Artifacts &amp; Standardized Reporting
+            </div>
+            <div style="font-size: 0.74rem; color: var(--text-muted); line-height: 1.5;">
+              HawkScan exports standardized machine-readable results ready for automated ingestion into GitHub Advanced Security, GitLab CI/CD, and Jira security workflows.
+            </div>
+            <div style="display: flex; gap: 0.65rem; flex-wrap: wrap;">
+              <a href="/api/export/sarif" class="btn-action" style="padding: 0.5rem 0.85rem;">
+                📥 Download SARIF 2.1.0 (.sarif)
+              </a>
+              <a href="/api/export/markdown" class="btn-action" style="padding: 0.5rem 0.85rem;">
+                📄 Download Markdown Pentest Report (.md)
+              </a>
+              <button class="btn-action" onclick="fetchJSONReport()" style="padding: 0.5rem 0.85rem;">
+                📦 Export Full JSON Dossier
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let eventSource = null;
+    let currentDossier = null;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initSSE();
+      loadLatestReport();
+    });
+
+    function initSSE() {
+      if (eventSource) eventSource.close();
+      eventSource = new EventSource('/api/stream');
+
+      eventSource.onmessage = (e) => {
+        try {
+          const data = JSON.parse(e.data);
+          appendLog(data.stage || 'system', data.message || JSON.stringify(data));
+
+          if (data.event_type === 'phase_started' || data.event_type === 'phase_completed') {
+            updateStepper(data.stage, data.event_type);
+          } else if (data.event_type === 'pipeline_completed' && data.details && data.details.dossier) {
+            renderDossier(data.details.dossier);
+            setStatus('completed', 'PENTEST COMPLETE');
+          } else if (data.event_type === 'pipeline_started') {
+            setStatus('running', 'PENTESTING TARGET');
+          }
+        } catch (err) {
+          console.error('SSE Error:', err);
+        }
+      };
+
+      eventSource.onerror = () => {
+        setTimeout(initSSE, 3000);
+      };
+    }
+
+    function appendLog(stage, message) {
+      const logs = document.getElementById('telemetryLogs');
+      const timeStr = new Date().toTimeString().split(' ')[0];
+      const div = document.createElement('div');
+      div.className = 'log-row';
+      div.innerHTML = `
+        <span class="log-time">[${timeStr}]</span>
+        <span class="stage-pill stage-${stage}">${stage}</span>
+        <span>${escapeHtml(message)}</span>
+      `;
+      logs.appendChild(div);
+      logs.scrollTop = logs.scrollHeight;
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function setStatus(className, text) {
+      const badge = document.getElementById('statusBadge');
+      badge.className = `status-badge ${className}`;
+      document.getElementById('statusText').textContent = text;
+      document.getElementById('mStateLabel').textContent = text;
+      const btn = document.getElementById('btnLaunch');
+      if (className === 'running') {
+        btn.disabled = true;
+        btn.innerHTML = '<span>⏳</span> PENTESTING...';
+      } else {
+        btn.disabled = false;
+        btn.innerHTML = '<span>⚡</span> RUN PENTEST';
+      }
+    }
+
+    function updateStepper(stage, eventType) {
+      const stageMap = {
+        'static_recon': 'step-1',
+        'dynamic_recon': 'step-2',
+        'exploitation': 'step-3',
+        'validation': 'step-4',
+        'reporting': 'step-5'
+      };
+      const id = stageMap[stage];
+      if (id) {
+        const el = document.getElementById(id);
+        if (eventType === 'phase_started') {
+          el.className = 'step-item active';
+        } else if (eventType === 'phase_completed') {
+          el.className = 'step-item done';
+        }
+      }
+    }
+
+    function switchLeftTab(tabId) {
+      document.querySelectorAll('.left-pane .pane-tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.left-view').forEach(v => v.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    function switchRightTab(tabId) {
+      document.querySelectorAll('.right-pane .pane-tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.right-tab-pane').forEach(p => p.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    function reloadFrame() {
+      const frame = document.getElementById('targetFrame');
+      const url = document.getElementById('targetUrlInput').value.trim() || 'http://127.0.0.1:8000';
+      frame.src = url;
+      document.getElementById('frameAddr').textContent = url;
+      document.getElementById('extLink').href = url;
+    }
+
+    async function startPentest() {
+      const targetUrl = document.getElementById('targetUrlInput').value.trim();
+      const repoPath = document.getElementById('repoPathInput').value.trim();
+      setStatus('running', 'PENTESTING TARGET');
+
+      // Reset stepper
+      for (let i = 1; i <= 5; i++) {
+        document.getElementById(`step-${i}`).className = 'step-item';
+      }
+
+      reloadFrame();
+
+      try {
+        const resp = await fetch('/api/scan/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ target_url: targetUrl, repo_path: repoPath })
+        });
+        if (!resp.ok) setStatus('idle', 'IDLE');
+      } catch (err) {
+        console.error('Failed to start pentest:', err);
+        setStatus('idle', 'IDLE');
+      }
+    }
+
+    async function loadLatestReport() {
+      try {
+        const resp = await fetch('/api/scan/report');
+        if (resp.ok) {
+          const dossier = await resp.json();
+          if (dossier.verified_vulnerabilities && dossier.verified_vulnerabilities.length > 0) {
+            renderDossier(dossier);
+          }
+        }
+      } catch (e) {
+        console.debug('Failed to load report:', e);
+      }
+    }
+
+    function renderDossier(dossier) {
+      currentDossier = dossier;
+      const sum = dossier.summary || {};
+
+      document.getElementById('mBreaches').textContent = sum.verified_vulnerabilities || 0;
+      document.getElementById('findingsTabCount').textContent = sum.verified_vulnerabilities || 0;
+      document.getElementById('mDiscarded').textContent = sum.discarded_false_positives || 0;
+      document.getElementById('suppressedTabCount').textContent = sum.discarded_false_positives || 0;
+      document.getElementById('mLive').textContent = sum.live_endpoints_count || 0;
+      document.getElementById('mStatic').textContent = sum.static_routes_count || 0;
+      document.getElementById('tabRouteCount').textContent = sum.static_routes_count || 0;
+      document.getElementById('mDuration').textContent = `${dossier.metadata?.duration_seconds || 0}s`;
+
+      // Render Static Routes
+      const surface = dossier.attack_surface || {};
+      const routes = [
+        ...(surface.public_endpoints || []),
+        ...(surface.authenticated_endpoints || [])
+      ];
+      const sContainer = document.getElementById('surfaceContainer');
+      if (routes.length) {
+        sContainer.innerHTML = routes.map(r => `
+          <div class="route-card">
+            <div>
+              <span class="method-badge method-${r.method}">${r.method}</span>
+              <strong style="margin-left: 0.4rem; color: #f8fafc;">${escapeHtml(r.path)}</strong>
+            </div>
+            <div style="font-size: 0.65rem; color: var(--text-sub);">${escapeHtml(r.file || '')}</div>
+          </div>
+        `).join('');
+      }
+
+      // Render Findings Table
+      const tbody = document.getElementById('findingsTableBody');
+      const vulns = dossier.verified_vulnerabilities || [];
+      if (!vulns.length) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-sub);">
+              No verified exploitable breaches detected.
+            </td>
+          </tr>
+        `;
+      } else {
+        tbody.innerHTML = vulns.map((v, i) => `
+          <tr onclick="toggleDrawer('drawer-${i}')" style="cursor: pointer;">
+            <td><span class="sev-tag sev-${v.severity}">${v.severity}</span></td>
+            <td><strong>${escapeHtml(v.title)}</strong></td>
+            <td><span style="font-family: var(--font-mono); font-size: 0.68rem; color: #818cf8;">${escapeHtml(v.cwe_id)}</span></td>
+            <td><code>${escapeHtml(v.target_endpoint)}</code></td>
+            <td style="text-align: right;"><button class="btn-action">Inspect</button></td>
+          </tr>
+          <tr id="drawer-${i}" style="display: none;">
+            <td colspan="5" style="padding: 0;">
+              <div class="drawer">
+                <div><strong>Description:</strong> ${escapeHtml(v.description)}</div>
+                <div><strong>Reproducible Proof-of-Concept Command:</strong></div>
+                <div class="code-snippet">${escapeHtml(v.proof_of_concept?.exploit_command || '')}</div>
+                <div><strong>Leaked Proof Evidence:</strong></div>
+                <div class="code-snippet">${escapeHtml(JSON.stringify(v.proof_of_concept?.leaked_payload || {}, null, 2))}</div>
+                <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.4rem 0.6rem; border-radius: 4px; color: #a7f3d0;">
+                  <strong>Remediation:</strong> ${escapeHtml(v.remediation?.guidance || '')}
+                </div>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      // Render Suppressed False Positives
+      const suppressed = dossier.discarded_false_positives || [];
+      const suppContainer = document.getElementById('suppressedContainer');
+      if (suppressed.length) {
+        suppContainer.innerHTML = suppressed.map(s => `
+          <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 0.65rem 0.85rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem;">
+            <div>
+              <strong>${escapeHtml(s.title)}</strong>
+              <div style="color: var(--text-sub); font-size: 0.68rem; margin-top: 0.15rem;">${escapeHtml(s.reason)}</div>
+            </div>
+            <span style="font-size: 0.62rem; color: var(--text-sub); border: 1px solid var(--border); padding: 0.1rem 0.4rem; border-radius: 4px;">DISCARDED</span>
+          </div>
+        `).join('');
+      }
+
+      // Render Patches
+      const patches = dossier.code_patches || {};
+      const patchContainer = document.getElementById('patchesContainer');
+      const patchKeys = Object.keys(patches);
+      if (patchKeys.length) {
+        patchContainer.innerHTML = patchKeys.map(k => `
+          <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; overflow: hidden;">
+            <div style="background: var(--bg-card-sub); padding: 0.4rem 0.75rem; font-size: 0.7rem; font-weight: 700; border-bottom: 1px solid var(--border);">
+              Patch: ${escapeHtml(k)}
+            </div>
+            <div class="code-snippet" style="border: none; border-radius: 0;">${escapeHtml(patches[k])}</div>
+          </div>
+        `).join('');
+      }
+    }
+
+    function toggleDrawer(id) {
+      const el = document.getElementById(id);
+      if (el) el.style.display = el.style.display === 'none' ? 'table-row' : 'none';
+    }
+
+    function fetchJSONReport() {
+      if (!currentDossier) { alert('No dossier available.'); return; }
+      const str = JSON.stringify(currentDossier, null, 2);
+      const blob = new Blob([str], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `hawkscan-dossier-${Date.now()}.json`;
+      a.click();
+    }
+
+    function confirmShutdown() {
+      if (confirm('Shut down HawkScan Pentester and terminate all servers?')) {
+        fetch('/api/system/shutdown', { method: 'POST' }).then(() => {
+          document.body.innerHTML = `
+            <div style="display:flex;height:100vh;align-items:center;justify-content:center;flex-direction:column;gap:1.25rem;background:#070a12;color:#94a3b8;font-family:sans-serif;text-align:center;">
+              <div style="font-size:3rem;">🛑</div>
+              <h2 style="color:#f8fafc;font-size:1.4rem;">HawkScan AI Pentester Stopped</h2>
+              <p style="font-size:0.9rem;max-width:400px;line-height:1.5;">All processes have terminated cleanly. You may now close this browser tab.</p>
+            </div>
+          `;
+        });
+      }
+    }
+
+    async function checkTargetPosture() {
+      const targetUrl = document.getElementById('targetUrlInput').value.trim() || 'http://127.0.0.1:8000';
+      try {
+        const res = await fetch(`/api/target/security-status?target_url=${encodeURIComponent(targetUrl)}`);
+        if (res.ok) {
+          const data = await res.json();
+          const isInsecure = !data.idor_protection_enabled && !data.sqli_protection_enabled;
+          const badge = document.getElementById('postureBadge');
+          if (badge) {
+            if (isInsecure) {
+              badge.style.background = 'rgba(244,63,94,0.18)';
+              badge.style.borderColor = 'rgba(244,63,94,0.4)';
+              badge.style.color = '#fda4af';
+              badge.innerHTML = '<span style="font-size:0.55rem;">🔴</span> INSECURE';
+            } else {
+              badge.style.background = 'rgba(16,185,129,0.18)';
+              badge.style.borderColor = 'rgba(16,185,129,0.4)';
+              badge.style.color = '#6ee7b7';
+              badge.innerHTML = '<span style="font-size:0.55rem;">🟢</span> PATCHED';
+            }
+          }
+        }
+      } catch (e) {
+        console.warn("Could not check target security posture:", e);
+      }
+    }
+
+    async function setTargetSecurity(makeSecure) {
+      const targetUrl = document.getElementById('targetUrlInput').value.trim() || 'http://127.0.0.1:8000';
+      try {
+        const res = await fetch(`/api/target/toggle-security?target_url=${encodeURIComponent(targetUrl)}&secure=${makeSecure}`, {
+          method: 'POST'
+        });
+        if (res.ok) {
+          await checkTargetPosture();
+          appendLog('system', `Target application posture updated: ${makeSecure ? 'PATCHED / HARDENED' : 'INSECURE / EXPLOITABLE'}`);
+        } else {
+          appendLog('system', `Failed to toggle security posture on ${targetUrl}: HTTP ${res.status}`);
+        }
+      } catch (e) {
+        appendLog('system', `Error contacting target: ${e.message}`);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      checkTargetPosture();
+      // Periodically poll posture every 5 seconds
+      setInterval(checkTargetPosture, 5000);
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'q' || e.key === 'Q')) {
+        e.preventDefault();
+        confirmShutdown();
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ApexPortal · Enterprise Cloud Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card: #111827;
+      --border: #1f2937;
+      --primary: #3b82f6;
+      --text: #f9fafb;
+      --muted: #9ca3af;
+      --accent: #10b981;
+      --danger: #ef4444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+    header { background: var(--card); border-bottom: 1px solid var(--border); padding: 0.75rem 1.5rem; display: flex; align-items: center; justify-content: space-between; }
+    .brand { display: flex; align-items: center; gap: 0.6rem; font-weight: 700; font-size: 1.1rem; }
+    .brand span { color: var(--primary); }
+    .user-pill { font-size: 0.75rem; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); padding: 0.25rem 0.65rem; border-radius: 9999px; }
+    .main-wrap { flex: 1; display: flex; overflow: hidden; }
+    .sidebar { width: 220px; background: var(--card); border-right: 1px solid var(--border); padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+    .nav-item { padding: 0.5rem 0.75rem; border-radius: 6px; font-size: 0.8rem; font-weight: 500; color: var(--muted); cursor: pointer; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; }
+    .nav-item.active, .nav-item:hover { background: rgba(255, 255, 255, 0.05); color: var(--text); }
+    .content { flex: 1; padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1.25rem; }
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+    .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; display: flex; flex-direction: column; gap: 0.25rem; }
+    .stat-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; font-weight: 600; }
+    .stat-val { font-size: 1.4rem; font-weight: 700; color: var(--text); }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; }
+    .card-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem; display: flex; align-items: center; justify-content: space-between; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    th { text-align: left; padding: 0.6rem; color: var(--muted); font-size: 0.7rem; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+    td { padding: 0.75rem 0.6rem; border-bottom: 1px solid rgba(31, 41, 55, 0.5); }
+    .btn { background: var(--primary); border: none; color: #fff; padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
+    .btn-inspect { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .btn-inspect:hover { background: #3b82f6; color: #fff; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 100; }
+    .modal { background: var(--card); border: 1px solid var(--border); border-radius: 10px; width: 480px; padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; font-weight: 700; }
+    .modal-body { font-size: 0.8rem; line-height: 1.5; color: var(--muted); background: #070a12; padding: 0.85rem; border-radius: 6px; font-family: 'JetBrains Mono', monospace; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">🔷 Apex<span>Portal</span> <span style="font-size: 0.7rem; color: var(--muted); font-weight: 400;">Enterprise Suite</span></div>
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <span class="user-pill">👤 Alice Johnson (alice@apex.local)</span>
+      <span style="font-size: 0.75rem; color: #10b981;">● Online</span>
+    </div>
+  </header>
+  <div class="main-wrap">
+    <div class="sidebar">
+      <a class="nav-item active">📊 Corporate Records</a>
+      <a class="nav-item">🔍 Global Search</a>
+      <a class="nav-item">⚙️ Settings</a>
+    </div>
+    <div class="content">
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">Accessible Records</div>
+          <div class="stat-val">1 Active</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Security Clearance</div>
+          <div class="stat-val">Tier 1 · Staff</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Authentication Status</div>
+          <div class="stat-val" style="color: #10b981;">Verified</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span>Confidential Records Portfolio</span>
+          <span style="font-size: 0.72rem; color: var(--muted);">Multi-Tenant Cloud DB</span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Record ID</th>
+              <th>Document Title</th>
+              <th>Category</th>
+              <th>Contract Value</th>
+              <th style="text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>REC-9002</code></td>
+              <td>Vendor Services Contract - Cloud Infrastructure</td>
+              <td>Infrastructure</td>
+              <td>$120,000 USD</td>
+              <td style="text-align: right;">
+                <button class="btn btn-inspect" onclick="openRecord('REC-9002')">View Document</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="recordModal">
+    <div class="modal">
+      <div class="modal-header">
+        <span id="modalTitle">Record Detail</span>
+        <button style="background: none; border: none; color: #fff; cursor: pointer;" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body" id="modalContent">Loading...</div>
+    </div>
+  </div>
+
+  <script>
+    async function openRecord(id) {
+      document.getElementById('recordModal').style.display = 'flex';
+      document.getElementById('modalContent').textContent = 'Fetching record ' + id + '...';
+      try {
+        const resp = await fetch('/api/records/' + id);
+        const data = await resp.json();
+        document.getElementById('modalTitle').textContent = data.title || id;
+        document.getElementById('modalContent').innerHTML = `
+          <strong>ID:</strong> ${data.id}<br>
+          <strong>Category:</strong> ${data.category}<br>
+          <strong>Owner ID:</strong> ${data.owner_id}<br>
+          <strong>Amount:</strong> $${(data.amount || 0).toLocaleString()} USD<br><br>
+          <strong>Confidential Content:</strong><br>${data.confidential_data || 'None'}
+        `;
+      } catch (e) {
+        document.getElementById('modalContent').textContent = 'Error loading record: ' + e;
+      }
+    }
+    function closeModal() {
+      document.getElementById('recordModal').style.display = 'none';
+    }
+  </script>
+</body>
+</html>
