@@ -406,6 +406,9 @@ class TestHawkScanPentester(unittest.TestCase):
         self.assertIn("tfHudBanner", ui_resp.text)
         self.assertIn("tfBottomDrawer", ui_resp.text)
         self.assertIn("tfCookieTableBody", ui_resp.text)
+        self.assertIn("tfPaneLogs", ui_resp.text)
+        self.assertIn("tfTabLogs", ui_resp.text)
+        self.assertIn("stage-tinyfish", ui_resp.text)
 
         # 2. Test /api/browser/status endpoint
         status_resp = self.hawkscan_client.get(f"/api/browser/status?target_url={self.live_url}")
@@ -434,6 +437,18 @@ class TestHawkScanPentester(unittest.TestCase):
         cookie_data = cookie_resp.json()
         self.assertEqual(cookie_data["status"], "success")
         self.assertIsInstance(cookie_data["cookies"], list)
+
+        # 6. Test TinyFishEngine terminal logger and telemetry emitter
+        emitted_logs = []
+        engine = TinyFishEngine(
+            target_url=self.live_url,
+            emit_fn=lambda s, ev, msg, det: emitted_logs.append((s, msg)),
+            verbose_terminal=True
+        )
+        engine._log("Test TinyFish terminal stream message", level="INFO")
+        self.assertGreaterEqual(len(emitted_logs), 1)
+        self.assertEqual(emitted_logs[0][0], "tinyfish")
+        self.assertIn("Test TinyFish terminal stream message", emitted_logs[0][1])
 
 
 if __name__ == "__main__":

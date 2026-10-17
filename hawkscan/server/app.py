@@ -265,7 +265,11 @@ async def get_or_create_browser(target_url: Optional[str] = None) -> TinyFishEng
     async with global_browser_lock:
         if global_browser_engine is None or global_browser_engine.engine_mode == "CLOSED":
             url = target_url or settings.DEFAULT_TARGET_URL
-            global_browser_engine = TinyFishEngine(target_url=url)
+            global_browser_engine = TinyFishEngine(
+                target_url=url,
+                emit_fn=broadcast_event,
+                verbose_terminal=True
+            )
             await global_browser_engine.start()
             if url:
                 await global_browser_engine.navigate(url)

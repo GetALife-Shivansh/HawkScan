@@ -38,8 +38,9 @@ We accept **Option C**:
 1. **Left Workspace Pane**: Set `🐟 TinyFish Autonomous Browser` as the primary active tab in `hawkscan/server/static/index.html`.
 2. **Dual-Mode Viewport**: Provide seamless switching between the live interactive DOM frame and the real-time Playwright/TinyFish base64 screencast snapshot.
 3. **Agent HUD Banner**: Display a glowing cyan pulse banner at the top of the viewport streaming the active agent action in real time (`NAVIGATE`, `EVALUATE_JS`, `EXTRACT_COOKIES`).
-4. **Interactive Cookie Jar & JS Console**: Offer a collapsible bottom drawer displaying parsed cookies with visual security badges (`HttpOnly`, `Secure`, `SameSite`, `XSS Stolen`) and a live JavaScript evaluation terminal.
+4. **Interactive Cookie Jar & JS Console**: Offer a collapsible bottom drawer displaying parsed cookies with visual security badges (`HttpOnly`, `Secure`, `SameSite`, `XSS Stolen`), a live JavaScript evaluation terminal, and a dedicated `📜 Terminal Engine Logs` stream.
 5. **Control Plane Endpoints**: Add `/api/browser/status`, `/api/browser/navigate`, `/api/browser/eval`, and `/api/browser/cookies` in `hawkscan/server/app.py`, ensuring dynamic event-loop safety for FastAPI and unit test runners.
+6. **Live Terminal Logging**: Emit ANSI-colored `[TINYFISH]` logs with timestamps directly to OS terminal standard output (`sys.stdout`) with unbuffered streaming (`PYTHONUNBUFFERED=1`), while simultaneously broadcasting telemetry events to the War Room UI `TERMINAL & TELEMETRY STREAM` panel.
 
 ---
 

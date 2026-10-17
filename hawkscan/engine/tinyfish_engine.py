@@ -3,19 +3,22 @@ Provides dual-mode browser execution:
 1. TinyFish Cloud CDP connection (for remote/cloud application testing)
 2. Local Headless Playwright Chromium (for offline, CI/CD, and loopback testing)
 
-Automatically selects the optimal engine based on target URL and connectivity.
+Automatically selects the optimal engine based on target URL and connectivity,
+with real-time terminal stdout logging and live telemetry emitter dispatch.
 """
 
 import asyncio
 import logging
 import httpx
-from typing import Optional, List, Dict, Any
+from datetime import datetime
+from typing import Optional, List, Dict, Any, Callable
 from urllib.parse import urlparse
 
 from playwright.async_api import async_playwright, Browser, BrowserContext, Page, Playwright
 from hawkscan.config import settings
 
 logger = logging.getLogger("hawkscan.tinyfish")
+logger.setLevel(logging.INFO)
 
 
 class TinyFishEngine:
@@ -27,11 +30,15 @@ class TinyFishEngine:
         api_url: Optional[str] = None,
         headless: bool = True,
         target_url: Optional[str] = None,
+        emit_fn: Optional[Callable[..., Any]] = None,
+        verbose_terminal: bool = True,
     ):
         self.api_key = api_key if api_key is not None else settings.TINYFISH_API_KEY
         self.api_url = (api_url or settings.TINYFISH_API_URL).rstrip("/")
         self.headless = headless
         self.target_url = target_url or ""
+        self.emit_fn = emit_fn
+        self.verbose_terminal = verbose_terminal
         
         self.engine_mode: str = "UNINITIALIZED"
         self.session_id: Optional[str] = None
@@ -45,6 +52,47 @@ class TinyFishEngine:
         self._browser: Optional[Browser] = None
         self._context: Optional[BrowserContext] = None
         self._active_page: Optional[Page] = None
+
+    def _log(self, message: str, level: str = "INFO", details: Optional[Dict[str, Any]] = None):
+        """Outputs structured, colored logs directly to the OS terminal and notifies telemetry emitter."""
+        if self.verbose_terminal:
+            time_str = datetime.now().strftime("%H:%M:%S")
+            if level == "ERROR":
+                badge = "\033[1;31m[TINYFISH ERROR]\033[0m"
+            elif level == "WARNING":
+                badge = "\033[1;33m[TINYFISH WARN]\033[0m"
+            elif level == "SUCCESS":
+                badge = "\033[1;32m[TINYFISH]\033[0m"
+            else:
+                badge = "\033[1;36m[TINYFISH]\033[0m"
+
+            print(f"\033[90m[{time_str}]\033[0m {badge} {message}", flush=True)
+
+        if level == "ERROR":
+            logger.error(message)
+        elif level == "WARNING":
+            logger.warning(message)
+        else:
+            logger.info(message)
+
+        if self.emit_fn:
+            try:
+                import inspect
+                sig = inspect.signature(self.emit_fn)
+                num_params = len(sig.parameters)
+                if num_params == 2:
+                    res = self.emit_fn("tinyfish", message)
+                else:
+                    res = self.emit_fn("tinyfish", level.lower(), message, details or {})
+
+                if inspect.isawaitable(res):
+                    try:
+                        loop = asyncio.get_running_loop()
+                        loop.create_task(res)
+                    except RuntimeError:
+                        pass
+            except Exception:
+                pass
 
     def _is_loopback(self, url: str) -> bool:
         """Determines if the target URL resolves to localhost/loopback."""
@@ -63,6 +111,8 @@ class TinyFishEngine:
         if url:
             self.target_url = url
             self.active_url = url
+
+        self._log(f"🐟 Initializing autonomous browser session (Target: {url or 'about:blank'}, Headless: {self.headless})")
         self._playwright = await async_playwright().start()
 
         # Decide whether to use TinyFish Cloud or Local Playwright
@@ -70,6 +120,7 @@ class TinyFishEngine:
         has_api_key = bool(self.api_key and self.api_key.strip())
 
         if has_api_key and not is_local_target:
+            self._log(f"☁️ Querying TinyFish Cloud CDP endpoint: {self.api_url}...")
             try:
                 # Attempt connection to TinyFish Cloud CDP
                 cdp_url = await self._acquire_tinyfish_cdp_url()
@@ -81,11 +132,13 @@ class TinyFishEngine:
                     )
                     self.engine_mode = "TINYFISH_CLOUD"
                     self.last_action = "CONNECTED_TINYFISH_CLOUD"
+                    self._log(f"✅ Connected to TinyFish Cloud CDP session {self.session_id} (CDP: {cdp_url[:45]}...)", level="SUCCESS")
                     return self.engine_mode
             except Exception as e:
-                logger.warning(f"TinyFish Cloud CDP connection failed: {e}. Falling back to Local Playwright.")
+                self._log(f"⚠️ TinyFish Cloud CDP connection failed: {e}. Falling back to Local Playwright.", level="WARNING")
 
         # Fallback to local Playwright Chromium
+        self._log(f"💻 Launching local headless Playwright Chromium (Target: loopback/offline)")
         self._browser = await self._playwright.chromium.launch(
             headless=self.headless,
             args=["--no-sandbox", "--disable-dev-shm-usage"]
@@ -97,6 +150,7 @@ class TinyFishEngine:
         self.engine_mode = "LOCAL_PLAYWRIGHT"
         self.session_id = f"local-session-{hex(abs(hash(url or 'hawkscan')))[2:10]}"
         self.last_action = "CONNECTED_LOCAL_PLAYWRIGHT"
+        self._log(f"✅ Local Playwright Chromium active (Session: {self.session_id})", level="SUCCESS")
         return self.engine_mode
 
     async def _acquire_tinyfish_cdp_url(self) -> Optional[str]:
@@ -119,7 +173,7 @@ class TinyFishEngine:
                     self.base_url = data.get("base_url")
                     return self.cdp_url
             except Exception as e:
-                logger.warning(f"TinyFish session creation failed: {e}")
+                self._log(f"⚠️ TinyFish session creation error: {e}", level="WARNING")
 
             # Fallback to direct websocket format if supported
             ws_url = f"{self.api_url.replace('http', 'ws')}/cdp?token={self.api_key}"
@@ -135,15 +189,29 @@ class TinyFishEngine:
 
     async def navigate(self, url: str, wait_until: str = "domcontentloaded", timeout: int = 15000) -> bool:
         """Navigates the active page to the specified URL."""
+        target_url = (url or "").strip()
+        if target_url and not target_url.startswith(("http://", "https://", "about:", "chrome:", "data:")):
+            if target_url.startswith(("localhost", "127.0.0.1", "0.0.0.0")):
+                target_url = f"http://{target_url}"
+            else:
+                target_url = f"https://{target_url}"
+
+        self._log(f"🌐 Navigating browser viewport -> {target_url}")
         page = await self.get_page()
         try:
-            self.last_action = f"NAVIGATE: {url}"
-            self.active_url = url
-            await page.goto(url, wait_until=wait_until, timeout=timeout)
+            self.last_action = f"NAVIGATE: {target_url}"
+            self.active_url = target_url
+            await page.goto(target_url, wait_until=wait_until, timeout=timeout)
+            title = ""
+            try:
+                title = await page.title()
+            except Exception:
+                pass
             await self._capture_latest_screenshot()
+            self._log(f"✅ Navigated to {target_url} (DOM Title: '{title}')", level="SUCCESS")
             return True
         except Exception as e:
-            logger.error(f"TinyFish navigation to {url} failed: {e}")
+            self._log(f"❌ Navigation failed to {target_url}: {e}", level="ERROR")
             return False
 
     async def _capture_latest_screenshot(self) -> Optional[str]:
@@ -154,6 +222,7 @@ class TinyFishEngine:
             import base64
             shot_bytes = await self._active_page.screenshot(type="jpeg", quality=75, full_page=False)
             self.last_screenshot_b64 = f"data:image/jpeg;base64,{base64.b64encode(shot_bytes).decode('utf-8')}"
+            self._log(f"📸 Captured live viewport screencast ({round(len(shot_bytes) / 1024, 1)} KB)")
             return self.last_screenshot_b64
         except Exception:
             return None
@@ -192,7 +261,6 @@ class TinyFishEngine:
         if not self._context:
             return []
         cookies = await self._context.cookies(urls)
-        # Normalize fields
         normalized = []
         for c in cookies:
             normalized.append({
@@ -205,13 +273,14 @@ class TinyFishEngine:
                 "secure": c.get("secure", False),
                 "same_site": c.get("sameSite", "None"),
             })
+        cookie_names = [c["name"] for c in normalized]
+        self._log(f"🍪 Inspected cookie jar: {len(normalized)} cookie(s) found {cookie_names}")
         return normalized
 
     async def set_cookies(self, cookies: List[Dict[str, Any]]):
         """Sets or injects cookies into the browser context."""
         if not self._context:
             await self.start()
-        # Convert snake_case to Playwright expected camelCase
         converted = []
         for c in cookies:
             cookie_dict = {
@@ -235,13 +304,17 @@ class TinyFishEngine:
 
             converted.append(cookie_dict)
         await self._context.add_cookies(converted)
+        self._log(f"🍪 Injected {len(converted)} cookie(s) into context: {[c['name'] for c in converted]}")
 
     async def execute_js(self, script: str) -> Any:
         """Evaluates JavaScript expression in current page."""
+        self._log(f"💻 Evaluating DOM JavaScript: {script}")
         page = await self.get_page()
         self.last_action = f"EVALUATE_JS: {script}"
         res = await page.evaluate(script)
         await self._capture_latest_screenshot()
+        res_preview = str(res)[:100] if res is not None else "undefined"
+        self._log(f"⚡ JS Evaluation returned: {res_preview}")
         return res
 
     async def get_dom_text(self, selector: str = "body") -> str:
@@ -250,9 +323,11 @@ class TinyFishEngine:
         try:
             elem = await page.query_selector(selector)
             if elem:
-                return await elem.inner_text()
-        except Exception:
-            pass
+                text = await elem.inner_text()
+                self._log(f"📄 Extracted DOM text from '{selector}' ({len(text)} chars)")
+                return text
+        except Exception as e:
+            self._log(f"⚠️ Failed extracting DOM text from '{selector}': {e}", level="WARNING")
         return ""
 
     async def take_screenshot(self, path: Optional[str] = None) -> bytes:
@@ -261,11 +336,14 @@ class TinyFishEngine:
         kwargs = {"type": "png", "full_page": True}
         if path:
             kwargs["path"] = path
-        return await page.screenshot(**kwargs)
+        data = await page.screenshot(**kwargs)
+        self._log(f"📸 Full-page screenshot captured ({round(len(data)/1024, 1)} KB)" + (f" -> {path}" if path else ""))
+        return data
 
     async def close(self):
         """Clean teardown of browser, context, and Playwright session."""
         try:
+            sid = self.session_id or "local"
             if self._active_page and not self._active_page.is_closed():
                 await self._active_page.close()
             if self._context:
@@ -274,6 +352,7 @@ class TinyFishEngine:
                 await self._browser.close()
             if self._playwright:
                 await self._playwright.stop()
+            self._log(f"🛑 Closed browser context and terminated engine session ({sid})")
         except Exception as e:
             logger.debug(f"Error during TinyFishEngine close: {e}")
         finally:

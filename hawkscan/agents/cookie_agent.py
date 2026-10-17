@@ -25,8 +25,10 @@ class CookieExploitAgent:
         self.engine = engine
 
     def log(self, msg: str):
+        from datetime import datetime
+        print(f"\033[90m[{datetime.now().strftime('%H:%M:%S')}]\033[0m \033[1;36m[TINYFISH]\033[0m 🍪 {msg}", flush=True)
         if self.emit_fn:
-            self.emit_fn("exploitation", msg)
+            self.emit_fn("tinyfish", msg)
 
     async def execute_exploit(
         self,
@@ -38,7 +40,11 @@ class CookieExploitAgent:
 
         recorder = StepRecorder(agent_name="CookieExploitAgent")
         owns_engine = self.engine is None
-        engine = self.engine or TinyFishEngine(target_url=self.target_url)
+        engine = self.engine or TinyFishEngine(
+            target_url=self.target_url,
+            emit_fn=lambda stage, ev_or_msg, *args: self.emit_fn("tinyfish", args[0] if args else ev_or_msg) if self.emit_fn else None,
+            verbose_terminal=True
+        )
 
         try:
             mode = await engine.start(self.target_url)

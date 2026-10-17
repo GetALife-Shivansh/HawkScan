@@ -84,6 +84,7 @@ def main():
     print("\033[1;33m[1/3] Starting ApexPortal Target Application (127.0.0.1:8000)...\033[0m")
     env = os.environ.copy()
     env["PYTHONPATH"] = base_dir
+    env["PYTHONUNBUFFERED"] = "1"
 
     target_proc = subprocess.Popen(
         [python_bin, "-m", "uvicorn", "target_app.app:app", "--host", "127.0.0.1", "--port", "8000", "--log-level", "warning"],
@@ -126,6 +127,7 @@ def main():
     print("\033[1;32m===================================================================\033[0m")
     print(f"  • HawkScan War Room:   \033[1;36m{ui_url}\033[0m")
     print("  • Target Webview:      \033[1;36mhttp://127.0.0.1:8000\033[0m")
+    print("  • TinyFish Logs:       \033[1;36mActive (Streaming live to terminal & War Room)\033[0m")
     print("  • SARIF 2.1.0 Export:  \033[1;36mhttp://127.0.0.1:9090/api/export/sarif\033[0m")
     print("  • SSE Telemetry Feed:  \033[1;36mhttp://127.0.0.1:9090/api/stream\033[0m")
     print()

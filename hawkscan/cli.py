@@ -29,13 +29,16 @@ def main():
         print(f"[*] Target Application URL: {args.url}")
         print(f"[*] Target Source Repository: {args.repo}")
 
-        def print_emitter(stage: str, msg: str):
-            print(f"[{stage.upper()}] {msg}")
+        def cli_emitter(stage: str, event_type: str, msg: str, details: dict = None):
+            if stage in ("tinyfish", "browser"):
+                print(f"\033[1;36m[TINYFISH]\033[0m 🐟 {msg}")
+            else:
+                print(f"[{stage.upper()}] {msg}")
 
         pipeline = HawkScanPipeline(
             target_url=args.url,
             repo_path=args.repo,
-            emit_callback=lambda s, e, m, d: print(f"[{s.upper()}] {m}")
+            emit_callback=cli_emitter
         )
 
         dossier = asyncio.run(pipeline.run())
