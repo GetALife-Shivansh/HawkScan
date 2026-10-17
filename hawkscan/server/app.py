@@ -17,6 +17,7 @@ from pydantic import BaseModel
 
 from hawkscan.config import settings
 from hawkscan.orchestrator.pipeline import HawkScanPipeline
+from hawkscan.engine.tinyfish_engine import TinyFishEngine
 
 app = FastAPI(
     title="HawkScan Autonomous AI Penetration Testing Core",
@@ -242,6 +243,100 @@ def shutdown_system():
             os.kill(os.getpid(), signal.SIGTERM)
     threading.Thread(target=kill_soon, daemon=True).start()
     return {"status": "shutting_down", "message": "HawkScan services terminating cleanly."}
+
+
+# =====================================================================
+# TinyFish Autonomous Browser Control Plane Endpoints
+# =====================================================================
+
+global_browser_engine: Optional[TinyFishEngine] = None
+global_browser_loop: Optional[asyncio.AbstractEventLoop] = None
+global_browser_lock: Optional[asyncio.Lock] = None
+
+
+async def get_or_create_browser(target_url: Optional[str] = None) -> TinyFishEngine:
+    global global_browser_engine, global_browser_loop, global_browser_lock
+    cur_loop = asyncio.get_running_loop()
+    if global_browser_lock is None or global_browser_loop != cur_loop:
+        global_browser_lock = asyncio.Lock()
+        global_browser_engine = None
+        global_browser_loop = cur_loop
+
+    async with global_browser_lock:
+        if global_browser_engine is None or global_browser_engine.engine_mode == "CLOSED":
+            url = target_url or settings.DEFAULT_TARGET_URL
+            global_browser_engine = TinyFishEngine(target_url=url)
+            await global_browser_engine.start()
+            if url:
+                await global_browser_engine.navigate(url)
+        elif target_url and global_browser_engine.target_url != target_url:
+            await global_browser_engine.navigate(target_url)
+        return global_browser_engine
+
+
+@app.get("/api/browser/status")
+async def get_browser_status(target_url: Optional[str] = None):
+    """Retrieves active TinyFish autonomous browser telemetry, cookies, and screencast frame."""
+    try:
+        eng = await get_or_create_browser(target_url)
+        state = await eng.get_state()
+        return {"status": "success", "state": state}
+    except Exception as e:
+        return {
+            "status": "error",
+            "error": str(e),
+            "state": {
+                "engine_mode": "STANDBY",
+                "session_id": "none",
+                "target_url": target_url or settings.DEFAULT_TARGET_URL,
+                "active_url": target_url or settings.DEFAULT_TARGET_URL,
+                "last_action": "READY",
+                "cookies": [],
+                "cookies_count": 0,
+                "screenshot_b64": None
+            }
+        }
+
+
+@app.post("/api/browser/navigate")
+async def browser_navigate(request: Request):
+    """Commands TinyFish autonomous browser to navigate to a target URL."""
+    try:
+        body = await request.json()
+        url = body.get("url", settings.DEFAULT_TARGET_URL).strip()
+        eng = await get_or_create_browser(url)
+        ok = await eng.navigate(url)
+        await broadcast_event("browser", "navigate", f"TinyFish Browser navigated to {url}", {"url": url, "success": ok})
+        state = await eng.get_state()
+        return {"status": "success" if ok else "failed", "state": state}
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
+
+
+@app.post("/api/browser/eval")
+async def browser_eval_js(request: Request):
+    """Executes JavaScript expression inside TinyFish live browser runtime."""
+    try:
+        body = await request.json()
+        script = body.get("script", "document.cookie")
+        eng = await get_or_create_browser()
+        result = await eng.execute_js(script)
+        await broadcast_event("browser", "eval_js", f"TinyFish executed JS: {script} -> {str(result)[:60]}", {"script": script, "result": result})
+        state = await eng.get_state()
+        return {"status": "success", "script": script, "result": result, "state": state}
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
+
+
+@app.get("/api/browser/cookies")
+async def browser_get_cookies():
+    """Retrieves cookies currently residing in the TinyFish browser context."""
+    try:
+        eng = await get_or_create_browser()
+        cookies = await eng.get_cookies()
+        return {"status": "success", "cookies": cookies, "count": len(cookies)}
+    except Exception as e:
+        return {"status": "error", "error": str(e), "cookies": [], "count": 0}
 
 
 if __name__ == "__main__":

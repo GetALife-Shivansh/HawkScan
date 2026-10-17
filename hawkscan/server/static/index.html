@@ -644,6 +644,267 @@
       color: #fde68a;
       border: 1px solid rgba(245, 158, 11, 0.4);
     }
+
+    /* TinyFish Browser Chrome Window & Viewport */
+    .tf-browser-bar {
+      background: #090e1a;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+    }
+    .tf-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.35rem 0.75rem;
+      background: #060a14;
+      border-bottom: 1px solid rgba(30, 41, 59, 0.7);
+    }
+    .tf-tab-chip {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      background: #0d1322;
+      border: 1px solid var(--border);
+      border-bottom: none;
+      padding: 0.25rem 0.65rem;
+      border-radius: 6px 6px 0 0;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #f8fafc;
+    }
+    .tf-fish-icon { font-size: 0.85rem; }
+    .tf-engine-tag {
+      font-size: 0.58rem;
+      font-weight: 800;
+      padding: 0.1rem 0.35rem;
+      border-radius: 3px;
+      background: linear-gradient(135deg, #4f46e5, #06b6d4);
+      color: #fff;
+      letter-spacing: 0.05em;
+    }
+    .tf-meta-chips {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.62rem;
+    }
+    .tf-chip {
+      color: var(--text-sub);
+      font-family: var(--font-mono);
+    }
+    .tf-status-chip {
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      font-weight: 800;
+      font-size: 0.6rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    .tf-status-chip.online {
+      background: rgba(16, 185, 129, 0.15);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .tf-nav-row {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.4rem 0.75rem;
+      background: #090e1a;
+    }
+    .btn-icon {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.75rem;
+    }
+    .btn-icon:hover { background: rgba(56, 189, 248, 0.2); color: #38bdf8; }
+    .tf-addr-bar {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: #02040a;
+      border: 1px solid var(--border);
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+    }
+    .tf-lock-icon { font-size: 0.65rem; color: #10b981; }
+    .tf-url-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #f8fafc;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+    }
+    .btn-danger {
+      background: rgba(244, 63, 94, 0.15) !important;
+      border-color: rgba(244, 63, 94, 0.4) !important;
+      color: #fda4af !important;
+    }
+    .btn-danger:hover {
+      background: #f43f5e !important;
+      color: #fff !important;
+    }
+    .tf-viewport-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      background: #000;
+    }
+    .tf-hud-banner {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      right: 10px;
+      z-index: 20;
+      background: rgba(6, 10, 20, 0.88);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(6, 182, 212, 0.4);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+      padding: 0.35rem 0.65rem;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.68rem;
+      pointer-events: none;
+    }
+    .tf-hud-pulse {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #06b6d4;
+      box-shadow: 0 0 10px #06b6d4;
+      animation: tfPulse 1.5s infinite;
+      flex-shrink: 0;
+    }
+    @keyframes tfPulse {
+      0% { transform: scale(0.9); opacity: 0.8; }
+      50% { transform: scale(1.4); opacity: 1; box-shadow: 0 0 14px #06b6d4; }
+      100% { transform: scale(0.9); opacity: 0.8; }
+    }
+    .tf-hud-prefix {
+      color: #06b6d4;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+    }
+    .tf-hud-text {
+      color: #e2e8f0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tf-viewport-frame {
+      flex: 1;
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: #fff;
+    }
+    .tf-bottom-drawer {
+      background: #070a14;
+      border-top: 1px solid var(--border);
+      display: none;
+      flex-direction: column;
+      height: 190px;
+      z-index: 30;
+      flex-shrink: 0;
+    }
+    .tf-bottom-drawer.open { display: flex; }
+    .tf-drawer-tabs {
+      background: #0d1322;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 0.5rem;
+      justify-content: space-between;
+    }
+    .tf-drawer-tab {
+      padding: 0.35rem 0.65rem;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+    }
+    .tf-drawer-tab.active {
+      color: #38bdf8;
+      border-bottom-color: #38bdf8;
+    }
+    .tf-drawer-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 0.2rem 0.4rem;
+      font-size: 0.75rem;
+    }
+    .tf-drawer-close:hover { color: #fff; }
+    .tf-drawer-pane {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0.5rem;
+      display: none;
+    }
+    .tf-drawer-pane.active { display: block; }
+    .tf-cookie-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.68rem;
+    }
+    .tf-cookie-table th {
+      text-align: left;
+      padding: 0.35rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-sub);
+      font-size: 0.6rem;
+    }
+    .tf-cookie-table td {
+      padding: 0.4rem 0.35rem;
+      border-bottom: 1px solid rgba(30, 41, 59, 0.5);
+    }
+    .tf-console-input-row {
+      display: flex;
+      gap: 0.4rem;
+      margin-bottom: 0.4rem;
+    }
+    .tf-console-input-row input {
+      flex: 1;
+      background: #02040a;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.3rem 0.5rem;
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      outline: none;
+    }
+    .tf-console-output {
+      background: #02040a;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.4rem 0.6rem;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: #38bdf8;
+      white-space: pre-wrap;
+      max-height: 90px;
+      overflow-y: auto;
+    }
   </style>
 </head>
 <body>
@@ -762,12 +1023,169 @@
     <!-- Left Pane -->
     <div class="left-pane">
       <div class="pane-tabs">
-        <button class="pane-tab-btn active" onclick="switchLeftTab('left-web')">🌐 Target Live Webview</button>
-        <button class="pane-tab-btn" onclick="switchLeftTab('left-surface')">🗺️ Static Code Surface (<span id="tabRouteCount">0</span>)</button>
+        <button class="pane-tab-btn active" data-tab="left-tinyfish" onclick="switchLeftTab('left-tinyfish', this)">🐟 TinyFish Autonomous Browser</button>
+        <button class="pane-tab-btn" data-tab="left-web" onclick="switchLeftTab('left-web', this)">🌐 Target Live Webview</button>
+        <button class="pane-tab-btn" data-tab="left-surface" onclick="switchLeftTab('left-surface', this)">🗺️ Static Code Surface (<span id="tabRouteCount">0</span>)</button>
       </div>
 
-      <!-- Left View 1: Target Live Webview -->
-      <div id="left-web" class="left-view active">
+      <!-- Left View 1: TinyFish Autonomous Browser Window -->
+      <div id="left-tinyfish" class="left-view active" style="display: flex; flex-direction: column;">
+        <div class="tf-browser-bar">
+          <!-- Window Title Bar -->
+          <div class="tf-title-row">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <div class="tf-tab-chip">
+                <span class="tf-fish-icon">🐟</span>
+                <span>TinyFish Autonomous Agent</span>
+                <span id="tfEngineModeBadge" class="tf-engine-tag">LOCAL_PLAYWRIGHT</span>
+              </div>
+            </div>
+            <div class="tf-meta-chips">
+              <span class="tf-chip" title="Session Identifier">SID: <span id="tfSessionId" style="color: #38bdf8;">init...</span></span>
+              <span id="tfStatusChip" class="tf-status-chip online">
+                <span style="font-size: 0.55rem;">●</span> <span id="tfStatusText">READY</span>
+              </span>
+              <button class="btn-action" onclick="toggleCookieDrawer('cookies')" style="font-size: 0.65rem; padding: 0.15rem 0.45rem;">
+                🍪 <span id="tfCookieCountBadge">0 Cookies</span>
+              </button>
+              <button class="btn-action" onclick="toggleViewMode()" id="tfToggleViewBtn" title="Toggle between Live Interactive Frame and Screencast Image" style="font-size: 0.65rem; padding: 0.15rem 0.45rem;">
+                🖼️ Screencast
+              </button>
+            </div>
+          </div>
+
+          <!-- Browser Address & Action Controls -->
+          <div class="tf-nav-row">
+            <button class="btn-icon" onclick="navigateTinyFishNav('back')" title="Back">◀</button>
+            <button class="btn-icon" onclick="navigateTinyFishNav('forward')" title="Forward">▶</button>
+            <button class="btn-icon" onclick="reloadTinyFish()" title="Reload Frame & Screencast">↻</button>
+            
+            <div class="tf-addr-bar">
+              <span class="tf-lock-icon">🔒</span>
+              <input
+                type="text"
+                id="tfUrlInput"
+                class="tf-url-input"
+                value="http://127.0.0.1:8000"
+                placeholder="http://target:8000"
+                onkeydown="if(event.key==='Enter') navigateTinyFish()"
+              />
+            </div>
+            
+            <button class="btn-action" onclick="navigateTinyFish()" style="font-size: 0.68rem; font-weight: 700; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border-color: rgba(56, 189, 248, 0.4);">
+              Go
+            </button>
+            <button class="btn-action btn-danger" onclick="evalDocCookie()" title="Evaluate document.cookie in TinyFish runtime to test for XSS / session theft">
+              🧪 Probe Cookies
+            </button>
+            <button class="btn-action" onclick="toggleCookieDrawer('console')" title="Open Live DOM JavaScript Console">
+              💻 Console
+            </button>
+          </div>
+        </div>
+
+        <!-- Viewport Area with HUD Overlay Banner -->
+        <div class="tf-viewport-area">
+          <div class="tf-hud-banner" id="tfHudBanner">
+            <div class="tf-hud-pulse" id="tfHudPulse"></div>
+            <span class="tf-hud-prefix">TINYFISH HUD:</span>
+            <span class="tf-hud-text" id="tfHudText">Autonomous Browser Standby · Probes Ready</span>
+          </div>
+
+          <!-- Interactive Target Frame (Default) -->
+          <iframe
+            id="tfInteractiveFrame"
+            class="tf-viewport-frame"
+            src="http://127.0.0.1:8000"
+            title="TinyFish Live Browser Viewport"
+            style="display: block; border: none;"
+          ></iframe>
+
+          <!-- Engine Base64 Screencast Overlay (Alternative View) -->
+          <div id="tfScreencastWrap" style="display: none; width: 100%; height: 100%; overflow: auto; background: #0b0f19; align-items: center; justify-content: center; position: relative;">
+            <img id="tfScreencastImg" src="" alt="TinyFish Viewport Screencast" style="max-width: 100%; max-height: 100%; object-fit: contain; box-shadow: 0 4px 20px rgba(0,0,0,0.5); display: none; margin: auto;" />
+            <div id="tfScreencastEmpty" style="color: var(--text-sub); font-size: 0.72rem; text-align: center; padding: 2rem; margin: auto;">
+              No screencast frame captured yet. Run a pentest or click "Probe Cookies" to take a screenshot.
+            </div>
+          </div>
+        </div>
+
+        <!-- Collapsible Bottom Drawer: Cookie Jar & JS Console -->
+        <div class="tf-bottom-drawer" id="tfBottomDrawer">
+          <div class="tf-drawer-tabs">
+            <div style="display: flex; gap: 0.5rem;">
+              <div class="tf-drawer-tab active" id="tfTabCookies" onclick="switchTfDrawerTab('cookies')">
+                🍪 Cookie Jar &amp; Security Flags (<span id="tfDrawerCookieCount">0</span>)
+              </div>
+              <div class="tf-drawer-tab" id="tfTabConsole" onclick="switchTfDrawerTab('console')">
+                💻 JavaScript DOM Console
+              </div>
+            </div>
+            <button class="tf-drawer-close" onclick="toggleCookieDrawer()" title="Close Drawer">✕</button>
+          </div>
+
+          <!-- Drawer Pane 1: Cookies Table -->
+          <div class="tf-drawer-pane active" id="tfPaneCookies">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+              <span style="font-size: 0.65rem; color: var(--text-sub);">
+                Active session cookies extracted from TinyFish browser context:
+              </span>
+              <button class="btn-action" onclick="fetchBrowserCookies()" style="font-size: 0.62rem; padding: 0.1rem 0.4rem;">
+                ↻ Refresh Cookies
+              </button>
+            </div>
+            <div style="overflow-x: auto;">
+              <table class="tf-cookie-table">
+                <thead>
+                  <tr>
+                    <th>NAME</th>
+                    <th>VALUE</th>
+                    <th>DOMAIN</th>
+                    <th>PATH</th>
+                    <th>HTTPONLY</th>
+                    <th>SECURE</th>
+                    <th>SAMESITE</th>
+                    <th>EXPOSURE</th>
+                  </tr>
+                </thead>
+                <tbody id="tfCookieTableBody">
+                  <tr>
+                    <td colspan="8" style="text-align: center; color: var(--text-sub); padding: 1rem;">
+                      No cookies loaded. Navigate or start a pentest to populate.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Drawer Pane 2: JS Console -->
+          <div class="tf-drawer-pane" id="tfPaneConsole">
+            <div class="tf-console-input-row">
+              <input
+                type="text"
+                id="tfConsoleInput"
+                placeholder="document.cookie, document.title, window.location.href..."
+                value="document.cookie"
+                onkeydown="if(event.key==='Enter') runConsoleEval()"
+              />
+              <button class="btn-action" onclick="runConsoleEval()" style="font-size: 0.65rem;">
+                ▶ Run Eval
+              </button>
+            </div>
+            <div style="display: flex; gap: 0.35rem; margin-bottom: 0.35rem;">
+              <button class="btn-action" onclick="quickEval('document.cookie')" style="font-size: 0.6rem; padding: 0.1rem 0.35rem;">document.cookie</button>
+              <button class="btn-action" onclick="quickEval('document.title')" style="font-size: 0.6rem; padding: 0.1rem 0.35rem;">document.title</button>
+              <button class="btn-action" onclick="quickEval('window.location.href')" style="font-size: 0.6rem; padding: 0.1rem 0.35rem;">window.location.href</button>
+              <button class="btn-action" onclick="quickEval('JSON.stringify(window.localStorage)')" style="font-size: 0.6rem; padding: 0.1rem 0.35rem;">localStorage</button>
+            </div>
+            <div class="tf-console-output" id="tfConsoleOutput">// TinyFish JavaScript DOM Console Output Ready...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Left View 2: Target Live Webview -->
+      <div id="left-web" class="left-view">
         <div class="webview-bar">
           <div class="addr-box">🔒 <span id="frameAddr">http://127.0.0.1:8000</span></div>
           <button class="btn-action" onclick="reloadFrame()">↻ Reload</button>
@@ -778,7 +1196,7 @@
         </div>
       </div>
 
-      <!-- Left View 2: Static Code Surface -->
+      <!-- Left View 3: Static Code Surface -->
       <div id="left-surface" class="left-view">
         <div class="surface-view" id="surfaceContainer">
           <div style="text-align: center; color: var(--text-sub); padding: 2rem; font-size: 0.74rem;">
@@ -907,6 +1325,7 @@
     window.addEventListener('DOMContentLoaded', () => {
       initSSE();
       loadLatestReport();
+      fetchBrowserStatus();
     });
 
     function initSSE() {
@@ -923,8 +1342,27 @@
           } else if (data.event_type === 'pipeline_completed' && data.details && data.details.dossier) {
             renderDossier(data.details.dossier);
             setStatus('completed', 'PENTEST COMPLETE');
+            fetchBrowserStatus();
           } else if (data.event_type === 'pipeline_started') {
             setStatus('running', 'PENTESTING TARGET');
+          }
+
+          if (data.stage === 'browser' || data.stage === 'exploitation') {
+            updateTinyFishLiveHud(data.message);
+            if (data.details) {
+              if (data.details.url) {
+                const urlInp = document.getElementById('tfUrlInput');
+                if (urlInp) urlInp.value = data.details.url;
+                const iframe = document.getElementById('tfInteractiveFrame');
+                if (iframe && iframe.src !== data.details.url) iframe.src = data.details.url;
+              }
+              if (data.details.screenshot_b64) {
+                updateScreencastImg(data.details.screenshot_b64);
+              }
+              if (data.details.cookies) {
+                renderCookieTable(data.details.cookies);
+              }
+            }
           }
         } catch (err) {
           console.error('SSE Error:', err);
@@ -988,32 +1426,331 @@
       }
     }
 
-    function switchLeftTab(tabId) {
+    function switchLeftTab(tabId, el) {
       document.querySelectorAll('.left-pane .pane-tab-btn').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.left-view').forEach(v => v.classList.remove('active'));
-      event.target.classList.add('active');
-      document.getElementById(tabId).classList.add('active');
+      const btn = el || (window.event ? (window.event.target.closest('.pane-tab-btn') || window.event.target) : null) || document.querySelector(`.pane-tab-btn[data-tab="${tabId}"]`);
+      if (btn) btn.classList.add('active');
+      const targetView = document.getElementById(tabId);
+      if (targetView) targetView.classList.add('active');
     }
 
     function switchRightTab(tabId) {
       document.querySelectorAll('.right-pane .pane-tab-btn').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.right-tab-pane').forEach(p => p.classList.remove('active'));
-      event.target.classList.add('active');
+      if (window.event && window.event.target) window.event.target.classList.add('active');
       document.getElementById(tabId).classList.add('active');
     }
 
     function reloadFrame() {
       const frame = document.getElementById('targetFrame');
       const url = document.getElementById('targetUrlInput').value.trim() || 'http://127.0.0.1:8000';
-      frame.src = url;
-      document.getElementById('frameAddr').textContent = url;
-      document.getElementById('extLink').href = url;
+      if (frame) frame.src = url;
+      const addr = document.getElementById('frameAddr');
+      if (addr) addr.textContent = url;
+      const link = document.getElementById('extLink');
+      if (link) link.href = url;
+    }
+
+    // --- TinyFish Autonomous Browser Control & Telemetry ---
+    let tfActiveView = 'frame'; // 'frame' or 'screencast'
+
+    function updateTinyFishLiveHud(actionText) {
+      const hud = document.getElementById('tfHudText');
+      if (hud && actionText) {
+        hud.textContent = actionText;
+        const pulse = document.getElementById('tfHudPulse');
+        if (pulse) {
+          pulse.style.background = '#f59e0b';
+          pulse.style.boxShadow = '0 0 12px #f59e0b';
+          setTimeout(() => {
+            pulse.style.background = '#06b6d4';
+            pulse.style.boxShadow = '0 0 10px #06b6d4';
+          }, 2000);
+        }
+      }
+    }
+
+    function updateScreencastImg(b64) {
+      const img = document.getElementById('tfScreencastImg');
+      const empty = document.getElementById('tfScreencastEmpty');
+      if (img && b64) {
+        img.src = b64;
+        img.style.display = 'block';
+        if (empty) empty.style.display = 'none';
+      }
+    }
+
+    function renderCookieTable(cookies) {
+      const tbody = document.getElementById('tfCookieTableBody');
+      const count = cookies ? cookies.length : 0;
+      const countBadge = document.getElementById('tfCookieCountBadge');
+      const drawerCount = document.getElementById('tfDrawerCookieCount');
+      if (countBadge) countBadge.textContent = `${count} Cookies`;
+      if (drawerCount) drawerCount.textContent = count;
+
+      if (!tbody) return;
+      if (!cookies || cookies.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" style="text-align: center; color: var(--text-sub); padding: 1rem;">
+              No cookies currently stored in TinyFish browser context.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = cookies.map(c => {
+        const isHttpOnly = Boolean(c.http_only || c.httpOnly);
+        const isSecure = Boolean(c.secure);
+        const sameSite = c.same_site || c.sameSite || 'None';
+        const isLeaked = !isHttpOnly;
+        return `
+          <tr>
+            <td style="font-weight: 700; color: #f8fafc;">${escapeHtml(c.name || '')}</td>
+            <td style="font-family: var(--font-mono); color: #38bdf8; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(c.value || '')}">${escapeHtml(c.value || '')}</td>
+            <td style="color: var(--text-sub); font-size: 0.65rem;">${escapeHtml(c.domain || '')}</td>
+            <td style="color: var(--text-sub); font-size: 0.65rem;">${escapeHtml(c.path || '/')}</td>
+            <td>
+              <span class="flag-chip ${isHttpOnly ? 'flag-good' : 'flag-bad'}">
+                ${isHttpOnly ? '✅ True' : '❌ False'}
+              </span>
+            </td>
+            <td>
+              <span class="flag-chip ${isSecure ? 'flag-good' : 'flag-bad'}">
+                ${isSecure ? '✅ True' : '❌ False'}
+              </span>
+            </td>
+            <td>
+              <span class="flag-chip ${sameSite.toLowerCase() === 'strict' ? 'flag-good' : 'flag-warn'}">
+                ${escapeHtml(sameSite)}
+              </span>
+            </td>
+            <td>
+              <span class="flag-chip ${isLeaked ? 'flag-bad' : 'flag-good'}">
+                ${isLeaked ? '⚠️ XSS Stolen' : '🛡️ Protected'}
+              </span>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function fetchBrowserStatus(optUrl) {
+      const targetUrl = optUrl || document.getElementById('targetUrlInput').value.trim() || 'http://127.0.0.1:8000';
+      try {
+        const res = await fetch(`/api/browser/status?target_url=${encodeURIComponent(targetUrl)}`);
+        if (res.ok) {
+          const data = await res.json();
+          const state = data.state || {};
+          const modeBadge = document.getElementById('tfEngineModeBadge');
+          if (modeBadge && state.engine_mode) {
+            modeBadge.textContent = state.engine_mode;
+            if (state.engine_mode === 'TINYFISH_CLOUD') {
+              modeBadge.style.background = 'linear-gradient(135deg, #06b6d4, #3b82f6)';
+            } else {
+              modeBadge.style.background = 'linear-gradient(135deg, #4f46e5, #06b6d4)';
+            }
+          }
+          const sid = document.getElementById('tfSessionId');
+          if (sid && state.session_id) {
+            sid.textContent = state.session_id.length > 18 ? state.session_id.substring(0, 18) + '...' : state.session_id;
+            sid.title = state.session_id;
+          }
+          if (state.active_url) {
+            const urlInp = document.getElementById('tfUrlInput');
+            if (urlInp && !urlInp.matches(':focus')) {
+              urlInp.value = state.active_url;
+            }
+            const iframe = document.getElementById('tfInteractiveFrame');
+            if (iframe && (!iframe.src || iframe.src === 'about:blank' || iframe.src.endsWith('/8000/'))) {
+              if (iframe.src !== state.active_url) iframe.src = state.active_url;
+            }
+          }
+          if (state.last_action) {
+            updateTinyFishLiveHud(state.last_action);
+          }
+          if (state.screenshot_b64) {
+            updateScreencastImg(state.screenshot_b64);
+          }
+          if (state.cookies) {
+            renderCookieTable(state.cookies);
+          }
+        }
+      } catch (err) {
+        console.debug('Failed to fetch browser status:', err);
+      }
+    }
+
+    async function navigateTinyFish(targetUrl) {
+      const url = targetUrl || document.getElementById('tfUrlInput').value.trim() || 'http://127.0.0.1:8000';
+      updateTinyFishLiveHud(`COMMAND: NAVIGATE -> ${url}`);
+      const iframe = document.getElementById('tfInteractiveFrame');
+      if (iframe) iframe.src = url;
+
+      try {
+        const res = await fetch('/api/browser/navigate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: url })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.state) {
+            if (data.state.screenshot_b64) updateScreencastImg(data.state.screenshot_b64);
+            if (data.state.cookies) renderCookieTable(data.state.cookies);
+          }
+          updateTinyFishLiveHud(`NAVIGATED: ${url}`);
+        }
+      } catch (e) {
+        console.error('Navigate error:', e);
+      }
+    }
+
+    async function navigateTinyFishNav(dir) {
+      try {
+        const script = dir === 'back' ? 'window.history.back()' : 'window.history.forward()';
+        await fetch('/api/browser/eval', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ script: script })
+        });
+        setTimeout(fetchBrowserStatus, 500);
+      } catch (e) {
+        console.warn('Nav history error:', e);
+      }
+    }
+
+    function reloadTinyFish() {
+      const url = document.getElementById('tfUrlInput').value.trim() || 'http://127.0.0.1:8000';
+      const frame = document.getElementById('tfInteractiveFrame');
+      if (frame) frame.src = url;
+      navigateTinyFish(url);
+    }
+
+    async function evalDocCookie() {
+      toggleCookieDrawer('cookies');
+      updateTinyFishLiveHud('AUTONOMOUS PROBE: document.cookie DOM Evaluation...');
+      try {
+        const res = await fetch('/api/browser/eval', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ script: 'document.cookie' })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const cookieStr = data.result || '';
+          appendLog('browser', `TinyFish evaluated document.cookie -> "${cookieStr || '(empty/HttpOnly)'}"`);
+          updateTinyFishLiveHud(`EVAL: document.cookie -> "${cookieStr.slice(0, 40)}"`);
+          if (data.state && data.state.screenshot_b64) updateScreencastImg(data.state.screenshot_b64);
+          await fetchBrowserCookies();
+        }
+      } catch (e) {
+        console.error('Eval error:', e);
+      }
+    }
+
+    async function fetchBrowserCookies() {
+      try {
+        const res = await fetch('/api/browser/cookies');
+        if (res.ok) {
+          const data = await res.json();
+          renderCookieTable(data.cookies || []);
+        }
+      } catch (e) {
+        console.warn('Could not fetch cookies:', e);
+      }
+    }
+
+    function toggleCookieDrawer(forceTab) {
+      const drawer = document.getElementById('tfBottomDrawer');
+      if (!drawer) return;
+      if (forceTab) {
+        drawer.classList.add('open');
+        switchTfDrawerTab(forceTab);
+      } else {
+        drawer.classList.toggle('open');
+      }
+    }
+
+    function switchTfDrawerTab(tabName) {
+      document.querySelectorAll('.tf-drawer-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tf-drawer-pane').forEach(p => p.classList.remove('active'));
+      if (tabName === 'cookies') {
+        const t = document.getElementById('tfTabCookies');
+        const p = document.getElementById('tfPaneCookies');
+        if (t) t.classList.add('active');
+        if (p) p.classList.add('active');
+        fetchBrowserCookies();
+      } else {
+        const t = document.getElementById('tfTabConsole');
+        const p = document.getElementById('tfPaneConsole');
+        if (t) t.classList.add('active');
+        if (p) p.classList.add('active');
+      }
+    }
+
+    async function runConsoleEval() {
+      const inp = document.getElementById('tfConsoleInput');
+      const out = document.getElementById('tfConsoleOutput');
+      const expr = inp ? inp.value.trim() : 'document.cookie';
+      if (!expr) return;
+      out.textContent = `> ${expr}\nEvaluating in TinyFish browser runtime...`;
+      try {
+        const res = await fetch('/api/browser/eval', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ script: expr })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const formatted = typeof data.result === 'object' ? JSON.stringify(data.result, null, 2) : String(data.result);
+          out.textContent = `> ${expr}\n< ${formatted}`;
+          if (data.state && data.state.screenshot_b64) updateScreencastImg(data.state.screenshot_b64);
+        } else {
+          out.textContent = `> ${expr}\nError: HTTP ${res.status}`;
+        }
+      } catch (e) {
+        out.textContent = `> ${expr}\nException: ${e.message}`;
+      }
+    }
+
+    function quickEval(code) {
+      const inp = document.getElementById('tfConsoleInput');
+      if (inp) inp.value = code;
+      runConsoleEval();
+    }
+
+    function toggleViewMode() {
+      const frame = document.getElementById('tfInteractiveFrame');
+      const screencast = document.getElementById('tfScreencastWrap');
+      const btn = document.getElementById('tfToggleViewBtn');
+      if (tfActiveView === 'frame') {
+        tfActiveView = 'screencast';
+        if (frame) frame.style.display = 'none';
+        if (screencast) screencast.style.display = 'flex';
+        if (btn) btn.innerHTML = '🌐 Interactive Frame';
+        fetchBrowserStatus();
+      } else {
+        tfActiveView = 'frame';
+        if (frame) frame.style.display = 'block';
+        if (screencast) screencast.style.display = 'none';
+        if (btn) btn.innerHTML = '🖼️ Screencast';
+      }
     }
 
     async function startPentest() {
       const targetUrl = document.getElementById('targetUrlInput').value.trim();
       const repoPath = document.getElementById('repoPathInput').value.trim();
       setStatus('running', 'PENTESTING TARGET');
+
+      // Update TinyFish browser url input and HUD
+      const tfUrl = document.getElementById('tfUrlInput');
+      if (tfUrl) tfUrl.value = targetUrl;
+      const tfFrame = document.getElementById('tfInteractiveFrame');
+      if (tfFrame) tfFrame.src = targetUrl;
+      updateTinyFishLiveHud(`STARTING PENTEST ON: ${targetUrl}`);
 
       // Reset stepper
       for (let i = 1; i <= 5; i++) {

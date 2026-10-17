@@ -130,6 +130,84 @@ Queries target application's active patch states.
 #### `POST /api/system/shutdown`
 Cleanly terminates HawkScan and target background processes via process group signal dispatch.
 
+### 1.5 TinyFish Autonomous Browser Control Plane
+
+#### `GET /api/browser/status`
+Retrieves real-time browser runtime telemetry, including engine execution mode (`LOCAL_PLAYWRIGHT` or `TINYFISH_CLOUD`), session ID, active URL, last action, cookie counts, and base64 screencast frame.
+- **Query Parameters**: `target_url` (optional, defaults to `http://127.0.0.1:8000`)
+- **Response (200 OK)**:
+  ```json
+  {
+    "status": "success",
+    "state": {
+      "engine_mode": "LOCAL_PLAYWRIGHT",
+      "session_id": "local-session-4a1b8c",
+      "target_url": "http://127.0.0.1:8000",
+      "active_url": "http://127.0.0.1:8000",
+      "title": "ApexPortal Enterprise Workspace",
+      "last_action": "NAVIGATE: http://127.0.0.1:8000",
+      "cookies": [],
+      "cookies_count": 0,
+      "screenshot_b64": "data:image/jpeg;base64,..."
+    }
+  }
+  ```
+
+#### `POST /api/browser/navigate`
+Commands the active browser instance to navigate to a target destination URL, automatically capturing an updated viewport screenshot and state snapshot.
+- **Request Body**:
+  ```json
+  {
+    "url": "http://127.0.0.1:8000"
+  }
+  ```
+- **Response (200 OK)**:
+  ```json
+  {
+    "status": "success",
+    "state": { ... }
+  }
+  ```
+
+#### `POST /api/browser/eval`
+Evaluates a JavaScript expression inside the active page's DOM context (e.g., assessing `document.cookie` leakage).
+- **Request Body**:
+  ```json
+  {
+    "script": "document.cookie"
+  }
+  ```
+- **Response (200 OK)**:
+  ```json
+  {
+    "status": "success",
+    "script": "document.cookie",
+    "result": "apex_session=sess_e3a891f",
+    "state": { ... }
+  }
+  ```
+
+#### `GET /api/browser/cookies`
+Extracts all active cookies currently stored in the browser context with full security attributes (`name`, `value`, `domain`, `path`, `http_only`, `secure`, `same_site`).
+- **Response (200 OK)**:
+  ```json
+  {
+    "status": "success",
+    "cookies": [
+      {
+        "name": "apex_session",
+        "value": "sess_e3a891f",
+        "domain": "127.0.0.1",
+        "path": "/",
+        "http_only": false,
+        "secure": false,
+        "same_site": "Lax"
+      }
+    ],
+    "count": 1
+  }
+  ```
+
 ---
 
 ## 2. ApexPortal Target Application API (`http://127.0.0.1:8000`)

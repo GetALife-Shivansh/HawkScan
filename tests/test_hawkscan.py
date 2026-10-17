@@ -396,6 +396,46 @@ class TestHawkScanPentester(unittest.TestCase):
 
         asyncio.run(run_cookie_test())
 
+    def test_14_browser_control_plane_and_ui_endpoints(self):
+        """Verify War Room UI exposes TinyFish browser and /api/browser control plane functions."""
+        # 1. Test UI index.html includes TinyFish Autonomous Browser components
+        ui_resp = self.hawkscan_client.get("/")
+        self.assertEqual(ui_resp.status_code, 200)
+        self.assertIn("🐟 TinyFish Autonomous Browser", ui_resp.text)
+        self.assertIn("tfInteractiveFrame", ui_resp.text)
+        self.assertIn("tfHudBanner", ui_resp.text)
+        self.assertIn("tfBottomDrawer", ui_resp.text)
+        self.assertIn("tfCookieTableBody", ui_resp.text)
+
+        # 2. Test /api/browser/status endpoint
+        status_resp = self.hawkscan_client.get(f"/api/browser/status?target_url={self.live_url}")
+        self.assertEqual(status_resp.status_code, 200)
+        status_data = status_resp.json()
+        self.assertEqual(status_data["status"], "success")
+        self.assertIn("engine_mode", status_data["state"])
+        self.assertIn("session_id", status_data["state"])
+
+        # 3. Test /api/browser/navigate endpoint
+        nav_resp = self.hawkscan_client.post("/api/browser/navigate", json={"url": self.live_url})
+        self.assertEqual(nav_resp.status_code, 200)
+        nav_data = nav_resp.json()
+        self.assertEqual(nav_data["status"], "success")
+
+        # 4. Test /api/browser/eval endpoint
+        eval_resp = self.hawkscan_client.post("/api/browser/eval", json={"script": "100 * 2"})
+        self.assertEqual(eval_resp.status_code, 200)
+        eval_data = eval_resp.json()
+        self.assertEqual(eval_data["status"], "success")
+        self.assertEqual(eval_data["result"], 200)
+
+        # 5. Test /api/browser/cookies endpoint
+        cookie_resp = self.hawkscan_client.get("/api/browser/cookies")
+        self.assertEqual(cookie_resp.status_code, 200)
+        cookie_data = cookie_resp.json()
+        self.assertEqual(cookie_data["status"], "success")
+        self.assertIsInstance(cookie_data["cookies"], list)
+
 
 if __name__ == "__main__":
     unittest.main()
+

@@ -10,6 +10,7 @@ This document serves as the chronological index of architectural, design, and te
 | [ADR-0004](decisions/0004-war-room-ui-and-sse-telemetry.md) | 2026-10-17 | War Room Web UI & Real-Time SSE Telemetry Stream | Accepted | Implemented |
 | [ADR-0005](decisions/0005-oasis-sarif-and-remediation-patch-artifacts.md) | 2026-10-17 | OASIS SARIF 2.1.0 and Unified Remediation Patch Artifacts | Accepted | Implemented |
 | [ADR-0006](decisions/0006-tinyfish-browser-agent-and-cookie-exploitation.md) | 2026-10-17 | TinyFish Browser Automation Engine & Cookie Security Exploitation | Accepted | Implemented |
+| [ADR-0007](decisions/0007-tinyfish-war-room-browser-viewport-and-control-plane.md) | 2026-10-17 | TinyFish War Room Browser Viewport and Control Plane Integration | Accepted | Implemented |
 
 ---
 
@@ -20,3 +21,5 @@ This document serves as the chronological index of architectural, design, and te
 4. **ADR-0004**: Designed the split-view cybersecurity War Room UI powered by server-sent telemetry events (SSE) on port 9090.
 5. **ADR-0005**: Standardized machine-readable outputs into OASIS SARIF 2.1.0 schemas and unified git diff patches.
 6. **ADR-0006**: Integrated TinyFish dual-engine browser automation, chronological StepRecorder, and CookieExploitAgent for DOM session theft verification.
+7. **ADR-0007**: Embedded the primary TinyFish autonomous browser window, dual-mode viewport, agent HUD, cookie jar, and DOM console into War Room UI.
+

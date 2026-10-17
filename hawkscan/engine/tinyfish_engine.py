@@ -34,6 +34,13 @@ class TinyFishEngine:
         self.target_url = target_url or ""
         
         self.engine_mode: str = "UNINITIALIZED"
+        self.session_id: Optional[str] = None
+        self.cdp_url: Optional[str] = None
+        self.base_url: Optional[str] = None
+        self.active_url: str = self.target_url
+        self.last_action: str = "READY"
+        self.last_screenshot_b64: Optional[str] = None
+
         self._playwright: Optional[Playwright] = None
         self._browser: Optional[Browser] = None
         self._context: Optional[BrowserContext] = None
@@ -53,6 +60,9 @@ class TinyFishEngine:
     async def start(self, target_url: Optional[str] = None) -> str:
         """Initializes the browser session using TinyFish Cloud or Local Playwright."""
         url = target_url or self.target_url
+        if url:
+            self.target_url = url
+            self.active_url = url
         self._playwright = await async_playwright().start()
 
         # Decide whether to use TinyFish Cloud or Local Playwright
@@ -70,6 +80,7 @@ class TinyFishEngine:
                         user_agent="HawkScan-TinyFish-Browser/1.0"
                     )
                     self.engine_mode = "TINYFISH_CLOUD"
+                    self.last_action = "CONNECTED_TINYFISH_CLOUD"
                     return self.engine_mode
             except Exception as e:
                 logger.warning(f"TinyFish Cloud CDP connection failed: {e}. Falling back to Local Playwright.")
@@ -84,29 +95,33 @@ class TinyFishEngine:
             user_agent="HawkScan-Browser-Agent/1.0"
         )
         self.engine_mode = "LOCAL_PLAYWRIGHT"
+        self.session_id = f"local-session-{hex(abs(hash(url or 'hawkscan')))[2:10]}"
+        self.last_action = "CONNECTED_LOCAL_PLAYWRIGHT"
         return self.engine_mode
 
     async def _acquire_tinyfish_cdp_url(self) -> Optional[str]:
         """Queries TinyFish Cloud API to provision a CDP browser session."""
         headers = {
-            "Authorization": f"Bearer {self.api_key}",
+            "X-API-Key": self.api_key,
             "Content-Type": "application/json"
         }
-        async with httpx.AsyncClient(timeout=8.0) as client:
-            # 1. Try session creation endpoint
+        async with httpx.AsyncClient(timeout=10.0) as client:
             try:
                 resp = await client.post(
-                    f"{self.api_url}/v1/sessions",
+                    self.api_url,
                     headers=headers,
-                    json={"target": self.target_url, "options": {"headless": self.headless}}
+                    json={"url": self.target_url or "https://www.tinyfish.ai"}
                 )
                 if resp.status_code in (200, 201):
                     data = resp.json()
-                    return data.get("cdp_url") or data.get("ws_url")
-            except Exception:
-                pass
+                    self.session_id = data.get("session_id")
+                    self.cdp_url = data.get("cdp_url")
+                    self.base_url = data.get("base_url")
+                    return self.cdp_url
+            except Exception as e:
+                logger.warning(f"TinyFish session creation failed: {e}")
 
-            # 2. Try direct websocket connection format
+            # Fallback to direct websocket format if supported
             ws_url = f"{self.api_url.replace('http', 'ws')}/cdp?token={self.api_key}"
             return ws_url
 
@@ -122,11 +137,55 @@ class TinyFishEngine:
         """Navigates the active page to the specified URL."""
         page = await self.get_page()
         try:
+            self.last_action = f"NAVIGATE: {url}"
+            self.active_url = url
             await page.goto(url, wait_until=wait_until, timeout=timeout)
+            await self._capture_latest_screenshot()
             return True
         except Exception as e:
             logger.error(f"TinyFish navigation to {url} failed: {e}")
             return False
+
+    async def _capture_latest_screenshot(self) -> Optional[str]:
+        """Takes a base64-encoded viewport screenshot for the live UI."""
+        if not self._active_page or self._active_page.is_closed():
+            return None
+        try:
+            import base64
+            shot_bytes = await self._active_page.screenshot(type="jpeg", quality=75, full_page=False)
+            self.last_screenshot_b64 = f"data:image/jpeg;base64,{base64.b64encode(shot_bytes).decode('utf-8')}"
+            return self.last_screenshot_b64
+        except Exception:
+            return None
+
+    async def get_state(self) -> Dict[str, Any]:
+        """Returns snapshot of current TinyFish browser engine state."""
+        cookies = await self.get_cookies()
+        title = ""
+        url = self.active_url
+        if self._active_page and not self._active_page.is_closed():
+            try:
+                title = await self._active_page.title()
+                url = self._active_page.url or self.active_url
+            except Exception:
+                pass
+
+        if not self.last_screenshot_b64 and self._active_page:
+            await self._capture_latest_screenshot()
+
+        return {
+            "engine_mode": self.engine_mode,
+            "session_id": self.session_id or ("local-playwright-session" if self.engine_mode == "LOCAL_PLAYWRIGHT" else "pending"),
+            "cdp_url": self.cdp_url,
+            "base_url": self.base_url,
+            "target_url": self.target_url,
+            "active_url": url,
+            "title": title,
+            "last_action": self.last_action,
+            "cookies": cookies,
+            "cookies_count": len(cookies),
+            "screenshot_b64": self.last_screenshot_b64
+        }
 
     async def get_cookies(self, urls: Optional[List[str]] = None) -> List[Dict[str, Any]]:
         """Retrieves cookies from the current browser context with full security attributes."""
@@ -180,7 +239,10 @@ class TinyFishEngine:
     async def execute_js(self, script: str) -> Any:
         """Evaluates JavaScript expression in current page."""
         page = await self.get_page()
-        return await page.evaluate(script)
+        self.last_action = f"EVALUATE_JS: {script}"
+        res = await page.evaluate(script)
+        await self._capture_latest_screenshot()
+        return res
 
     async def get_dom_text(self, selector: str = "body") -> str:
         """Extracts text content from a DOM selector."""

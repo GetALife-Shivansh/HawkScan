@@ -27,7 +27,7 @@ HawkScan employs an automated 5-phase testing strategy strictly adhering to the 
 
 ---
 
-## 3. Verified Test Results (Ran 13 tests in 4.793s - 100% Passing)
+## 3. Verified Test Results (Ran 14 tests in 10.037s - 100% Passing)
 
 | Test ID & Method | Focus Area | Result | Verified Runtime Output / Assertions | Verification Date |
 | :--- | :--- | :--- | :--- | :--- |
@@ -44,6 +44,7 @@ HawkScan employs an automated 5-phase testing strategy strictly adhering to the 
 | `test_11_step_recorder` | Chronological Action Trace | **PASSED** | StepRecorder sequentially logs actions, numbering each step, capturing target, details, and outcome status badges. Generates GitHub Flavored Markdown table. | 2026-10-17 |
 | `test_12_tinyfish_engine_loopback_and_lifecycle` | Dual-Engine Browser Automation | **PASSED** | TinyFishEngine detects loopback target, launches local headless Playwright Chromium, navigates, executes JS evaluation, extracts cookies, and tears down cleanly. | 2026-10-17 |
 | `test_13_cookie_exploit_agent_breach` | Cookie Security & Session Theft | **PASSED** | CookieExploitAgent identifies missing HttpOnly attribute, executes `document.cookie` in DOM via TinyFish, steals session token, and proves replay against `/api/auth/me`. | 2026-10-17 |
+| `test_14_browser_control_plane_and_ui_endpoints` | TinyFish UI & Browser API | **PASSED** | War Room serves TinyFish Autonomous Browser window markup. Tests `/api/browser/status`, `/api/browser/navigate`, `/api/browser/eval` (`100 * 2 == 200`), and `/api/browser/cookies`. | 2026-10-17 |
 
 ---
 
