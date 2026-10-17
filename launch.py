@@ -38,10 +38,34 @@ def check_health(url: str, max_retries: int = 20) -> bool:
     return False
 
 
+def free_port(port: int):
+    """Detects and terminates lingering or orphaned processes holding the specified port."""
+    try:
+        cmd = ["lsof", "-t", f"-iTCP:{port}", "-sTCP:LISTEN"]
+        res = subprocess.run(cmd, capture_output=True, text=True)
+        pids = [p.strip() for p in res.stdout.split() if p.strip()]
+        for pid in pids:
+            try:
+                pid_int = int(pid)
+                if pid_int != os.getpid():
+                    print(f"\033[1;33m[*] Port {port} is in use: terminating orphaned process (PID {pid_int})...\033[0m")
+                    os.kill(pid_int, signal.SIGKILL)
+            except Exception:
+                pass
+        if pids:
+            time.sleep(0.5)
+    except Exception:
+        pass
+
+
 def main():
     print(BANNER)
     base_dir = os.path.dirname(os.path.abspath(__file__))
     python_bin = sys.executable
+
+    # Automatically free ports 8000 and 9090 if previous instances were not cleanly closed
+    free_port(8000)
+    free_port(9090)
 
     print("\033[1;34m[*] Python Environment:\033[0m " + python_bin)
     print("\033[1;34m[*] Target Application:\033[0m ApexPortal Testbed (Port 8000)")
