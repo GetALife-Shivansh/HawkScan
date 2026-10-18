@@ -308,8 +308,6 @@ async def get_or_create_browser(target_url: Optional[str] = None, force_engine: 
             await global_browser_engine.start(force_cloud=force_c, force_local=force_l)
             if target_url:
                 await global_browser_engine.navigate(target_url)
-        elif target_url and global_browser_engine.target_url != target_url:
-            await global_browser_engine.navigate(target_url)
 
         return global_browser_engine
 
@@ -323,6 +321,8 @@ async def browser_reconnect(request: Request):
         mode = (body.get("mode") or "").strip().lower()  # "cloud", "local", or "auto"
         force_eng = mode if mode in ("cloud", "local") else None
         eng = await get_or_create_browser(target_url=target_url, force_engine=force_eng)
+        if target_url:
+            await eng.navigate(target_url)
         state = await eng.get_state()
         await broadcast_event("browser", "reconnect", f"Switched engine to {state['engine_mode']} ({state['session_id']})", state)
         return {"status": "success", "state": state}

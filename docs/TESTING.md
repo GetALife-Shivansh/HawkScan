@@ -27,7 +27,7 @@ HawkScan employs an automated 5-phase testing strategy strictly adhering to the 
 
 ---
 
-## 3. Verified Test Results (Ran 15 tests in 13.757s - 100% Passing)
+## 3. Verified Test Results (Ran 15 tests in 9.560s - 100% Passing)
 
 | Test ID & Method | Focus Area | Result | Verified Runtime Output / Assertions | Verification Date |
 | :--- | :--- | :--- | :--- | :--- |

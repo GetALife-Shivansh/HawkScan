@@ -1458,10 +1458,9 @@
       }, 1500);
     }
 
-    async function fetchBrowserStatus(optUrl) {
-      const targetUrl = optUrl || document.getElementById('targetUrlInput').value.trim() || 'http://127.0.0.1:8000';
+    async function fetchBrowserStatus() {
       try {
-        const res = await fetch(`/api/browser/status?target_url=${encodeURIComponent(targetUrl)}`);
+        const res = await fetch('/api/browser/status');
         if (res.ok) {
           const data = await res.json();
           if (data.status === 'success' && data.state) {

@@ -241,6 +241,7 @@ class TinyFishEngine:
         page = await self.get_page()
         try:
             self.last_action = f"NAVIGATE: {target_url}"
+            self.target_url = target_url
             self.active_url = target_url
             await page.goto(nav_url, wait_until=wait_until, timeout=timeout)
             title = ""
