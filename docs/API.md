@@ -40,8 +40,14 @@ Real-time Server-Sent Events (SSE) feed delivering live Phase 1-5 agent telemetr
 ### 1.3 Scan Execution & Dossier
 
 #### `POST /api/scan/start`
-Triggers an autonomous 5-phase penetration testing pipeline in a background task.
-- **Request Body**:
+Triggers an autonomous 5-phase penetration testing pipeline in a background task against any target website.
+- **Request Body (Target Website Mode)**:
+  ```json
+  {
+    "target_url": "http://127.0.0.1:8000"
+  }
+  ```
+- **Optional White-Box Body**:
   ```json
   {
     "target_url": "http://127.0.0.1:8000",
@@ -53,8 +59,8 @@ Triggers an autonomous 5-phase penetration testing pipeline in a background task
   {
     "status": "started",
     "target_url": "http://127.0.0.1:8000",
-    "repo_path": "target_app",
-    "message": "HawkScan AI Pentester launched against http://127.0.0.1:8000 with repo target_app."
+    "repo_path": null,
+    "message": "HawkScan AI Pentester launched against website http://127.0.0.1:8000."
   }
   ```
 

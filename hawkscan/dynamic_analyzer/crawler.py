@@ -35,12 +35,25 @@ class DynamicCrawler:
         target_status_code = 0
 
         async with httpx.AsyncClient(timeout=6.0, verify=False, follow_redirects=True) as client:
+            discovered_html_paths = []
             # Step 1: Base URL Health Check
             try:
                 base_resp = await client.get(self.target_url, headers={"User-Agent": "HawkScan-AI-Pentester/1.0"})
                 target_status_code = base_resp.status_code
                 server_headers = dict(base_resp.headers)
                 self.log(f"Target responded with HTTP {target_status_code} ({len(base_resp.content)} bytes).")
+                
+                # Dynamic discovery: extract internal links if target responds with HTML
+                ct = base_resp.headers.get("content-type", "").lower()
+                if "text/html" in ct and base_resp.text:
+                    import re
+                    links = re.findall(r'href=[\'"]?([^\'" >]+)', base_resp.text)
+                    for link in links:
+                        link_clean = link.split("#")[0].split("?")[0].strip()
+                        if link_clean.startswith("/") and len(link_clean) > 1 and link_clean not in discovered_html_paths:
+                            discovered_html_paths.append(link_clean)
+                    if discovered_html_paths:
+                        self.log(f"Discovered {len(discovered_html_paths)} hyperlinked routes on live website.")
             except Exception as e:
                 self.log(f"Warning: Failed to reach base URL {self.target_url}: {e}")
 
@@ -65,7 +78,7 @@ class DynamicCrawler:
             except Exception as e:
                 self.log(f"Notice: Authentication attempt failed: {e}")
 
-            # Step 3: Probe Discovered Routes from Static Analysis
+            # Step 3: Probe Discovered Routes from Static Analysis and Live Web Discovery
             headers = {}
             if auth_session["token"]:
                 headers["Authorization"] = f"Bearer {auth_session['token']}"
@@ -79,6 +92,11 @@ class DynamicCrawler:
                 "/openapi.json",
                 "/docs"
             ]
+
+            # Merge with discovered HTML links from target website
+            for p in discovered_html_paths:
+                if p not in candidate_paths:
+                    candidate_paths.append(p)
 
             # Merge with any static surface routes
             for r in static_surface.get("public_endpoints", []) + static_surface.get("authenticated_endpoints", []):

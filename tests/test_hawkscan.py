@@ -267,7 +267,7 @@ class TestHawkScanPentester(unittest.TestCase):
             verified_test_vulns,
             []
         )
-        self.assertIn("# 🦅 HawkScan Autonomous AI Penetration Testing Report", md)
+        self.assertIn("# HawkScan Autonomous AI Penetration Testing Report", md)
         self.assertIn("HAWKSCAN-BOLA-001", md)
         self.assertIn("CWE-639", md)
         self.assertIn("curl http://...", md)
@@ -289,13 +289,12 @@ class TestHawkScanPentester(unittest.TestCase):
         self.assertEqual(ui_resp.status_code, 200)
         self.assertIn("HAWKSCAN", ui_resp.text)
         self.assertIn("targetUrlInput", ui_resp.text)
-        self.assertIn("repoPathInput", ui_resp.text)
+        self.assertIn("TARGET WEBSITE", ui_resp.text)
         self.assertIn("Proof-by-Exploitation", ui_resp.text)
 
-        # 3. POST /api/scan/start
+        # 3. POST /api/scan/start (Target Website mode without repo_path)
         scan_resp = self.hawkscan_client.post("/api/scan/start", json={
-            "target_url": "http://127.0.0.1:8000",
-            "repo_path": "."
+            "target_url": "http://127.0.0.1:8000"
         })
         self.assertEqual(scan_resp.status_code, 200)
         self.assertEqual(scan_resp.json()["status"], "started")
@@ -407,7 +406,7 @@ class TestHawkScanPentester(unittest.TestCase):
         # 1. Test UI index.html includes TinyFish Autonomous Browser components
         ui_resp = self.hawkscan_client.get("/")
         self.assertEqual(ui_resp.status_code, 200)
-        self.assertIn("🐟 TinyFish Autonomous Browser", ui_resp.text)
+        self.assertIn("TinyFish Autonomous Browser", ui_resp.text)
         self.assertIn("tfInteractiveFrame", ui_resp.text)
         self.assertIn("tfHudBanner", ui_resp.text)
         self.assertIn("tfBottomDrawer", ui_resp.text)

@@ -1,1536 +1,1535 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HawkScan · Autonomous White-Box AI Pentester</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HawkScan — Automated Vulnerability Assessment &amp; Verification</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-dark: #070a12;
-      --bg-card: #0d1322;
-      --bg-card-sub: #141c30;
-      --border: #1e293b;
-      --border-accent: #334155;
-      --cyan: #06b6d4;
-      --cyan-glow: rgba(6, 182, 212, 0.25);
-      --emerald: #10b981;
-      --emerald-glow: rgba(16, 185, 129, 0.25);
-      --rose: #f43f5e;
-      --rose-glow: rgba(244, 63, 94, 0.25);
-      --amber: #f59e0b;
-      --indigo: #6366f1;
-      --indigo-glow: rgba(99, 102, 241, 0.25);
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --text-sub: #64748b;
-      --font-sans: 'Plus Jakarta Sans', sans-serif;
-      --font-mono: 'JetBrains Mono', monospace;
+      --bg-base: #090d16;
+      --bg-sidebar: #0d1322;
+      --bg-surface: #111827;
+      --bg-surface-elevated: #162032;
+      --bg-input: #0b0f1a;
+      --border: #1f293d;
+      --border-subtle: #192233;
+      --border-focus: #3b82f6;
+
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+
+      --accent-blue: #3b82f6;
+      --accent-blue-hover: #2563eb;
+      --accent-red: #ef4444;
+      --accent-red-bg: rgba(239, 68, 68, 0.12);
+      --accent-green: #10b981;
+      --accent-green-bg: rgba(16, 185, 129, 0.12);
+      --accent-amber: #f59e0b;
+      --accent-amber-bg: rgba(245, 158, 11, 0.12);
+      --accent-cyan: #06b6d4;
+
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+
+      --sidebar-width: 250px;
+      --header-height: 56px;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      background-color: var(--bg-dark);
-      color: var(--text-main);
+      background: var(--bg-base);
+      color: var(--text-primary);
       font-family: var(--font-sans);
+      font-size: 0.8125rem;
+      line-height: 1.5;
       height: 100vh;
+      overflow: hidden;
+      display: flex;
+    }
+
+    /* SVG Icons */
+    .icon {
+      width: 16px;
+      height: 16px;
+      stroke-width: 2;
+      stroke: currentColor;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex-shrink: 0;
+    }
+    .icon-sm { width: 13px; height: 13px; stroke-width: 2; }
+    .icon-lg { width: 20px; height: 20px; stroke-width: 2; }
+
+    /* =========================================================================
+       SIDEBAR
+       ========================================================================= */
+    .sidebar {
+      width: var(--sidebar-width);
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      overflow: hidden;
+      flex-shrink: 0;
+      height: 100vh;
+      user-select: none;
+      z-index: 20;
     }
 
-    /* Top Command Header */
-    header {
-      background: rgba(13, 19, 34, 0.96);
-      backdrop-filter: blur(14px);
+    .sidebar-brand {
+      height: var(--header-height);
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0 1.25rem;
       border-bottom: 1px solid var(--border);
-      padding: 0.55rem 1.25rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      z-index: 50;
-      flex-shrink: 0;
-      gap: 0.85rem;
     }
-
-    .brand-group {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      flex-shrink: 0;
-    }
-
-    .brand-logo {
-      width: 36px;
-      height: 36px;
-      background: linear-gradient(135deg, #4f46e5, #06b6d4);
-      border-radius: 8px;
+    .sidebar-brand-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: #1d4ed8;
+      color: #fff;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.15rem;
-      box-shadow: 0 0 14px var(--indigo-glow);
+    }
+    .sidebar-brand-text {
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar-brand-text h1 {
+      font-size: 0.875rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: #fff;
+    }
+    .sidebar-brand-text span {
+      font-size: 0.625rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
     }
 
-    .brand-titles h1 {
-      font-size: 1.05rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
+    .sidebar-nav {
+      flex: 1;
+      padding: 1rem 0.65rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      overflow-y: auto;
+    }
+
+    .nav-item {
       display: flex;
       align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      color: var(--text-secondary);
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      border: 1px solid transparent;
+      text-decoration: none;
+    }
+    .nav-item:hover {
+      background: var(--bg-surface);
+      color: var(--text-primary);
+    }
+    .nav-item.active {
+      background: rgba(59, 130, 246, 0.12);
+      color: #60a5fa;
+      border-color: rgba(59, 130, 246, 0.25);
+    }
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .nav-badge {
+      font-size: 0.625rem;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      padding: 0.1rem 0.4rem;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+    }
+    .nav-item.active .nav-badge {
+      background: rgba(59, 130, 246, 0.25);
+      color: #93c5fd;
+    }
+
+    .sidebar-footer {
+      padding: 0.85rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      background: rgba(0, 0, 0, 0.15);
+    }
+
+    .sidebar-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.65rem;
+      display: flex;
+      flex-direction: column;
       gap: 0.4rem;
     }
-
-    .brand-titles h1 span {
-      background: linear-gradient(90deg, #818cf8, #38bdf8);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .brand-titles p {
-      font-size: 0.64rem;
-      color: var(--text-sub);
-      font-weight: 700;
+    .sidebar-card-label {
+      font-size: 0.625rem;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.03em;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .btn-toggle-group {
+      display: flex;
+      gap: 0.3rem;
+    }
+    .btn-toggle {
+      flex: 1;
+      padding: 0.28rem 0.4rem;
+      font-size: 0.625rem;
+      font-weight: 600;
+      border-radius: 4px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      text-align: center;
+      transition: all 0.15s ease;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-secondary);
+    }
+    .btn-toggle:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+    .btn-toggle.danger {
+      background: var(--accent-red-bg);
+      border-color: rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+    }
+    .btn-toggle.success {
+      background: var(--accent-green-bg);
+      border-color: rgba(16, 185, 129, 0.3);
+      color: #86efac;
     }
 
-    .omnibar-group {
+    .btn-sidebar-exit {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      border-radius: 6px;
+      padding: 0.38rem 0.5rem;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      transition: all 0.15s ease;
+    }
+    .btn-sidebar-exit:hover {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+    }
+
+    /* =========================================================================
+       MAIN CONTENT CONTAINER
+       ========================================================================= */
+    .app-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    .app-header {
+      height: var(--header-height);
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.25rem;
+      gap: 1rem;
+      flex-shrink: 0;
+    }
+
+    .header-omnibar {
       display: flex;
       align-items: center;
       gap: 0.5rem;
       flex: 1;
-      max-width: 650px;
+      max-width: 620px;
     }
-
-    .input-pill {
-      display: inline-flex;
+    .omnibar-wrap {
+      display: flex;
       align-items: center;
-      gap: 0.4rem;
-      background: rgba(7, 10, 18, 0.9);
+      background: var(--bg-input);
       border: 1px solid var(--border);
+      border-radius: 6px;
       padding: 0.25rem 0.65rem;
-      border-radius: 9999px;
       flex: 1;
-      transition: all 0.2s;
+      gap: 0.45rem;
+      transition: border-color 0.15s ease;
     }
-    .input-pill:focus-within {
-      border-color: #38bdf8;
-      box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+    .omnibar-wrap:focus-within {
+      border-color: var(--border-focus);
     }
-    .input-label {
-      font-size: 0.62rem;
-      font-weight: 800;
-      color: var(--text-sub);
+    .omnibar-label {
+      font-size: 0.625rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
       white-space: nowrap;
     }
     .omnibar-input {
       background: transparent;
       border: none;
       outline: none;
-      color: var(--text-main);
+      color: #fff;
       font-family: var(--font-mono);
-      font-size: 0.72rem;
+      font-size: 0.75rem;
       width: 100%;
     }
 
-    .top-controls {
+    .btn-primary {
+      background: var(--accent-blue);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 0.38rem 0.85rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: background 0.15s ease;
+      white-space: nowrap;
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: var(--accent-blue-hover);
+    }
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .header-actions {
       display: flex;
       align-items: center;
-      gap: 0.55rem;
-      flex-shrink: 0;
+      gap: 0.65rem;
     }
 
     .status-badge {
       display: inline-flex;
       align-items: center;
       gap: 0.35rem;
-      padding: 0.25rem 0.65rem;
+      padding: 0.2rem 0.55rem;
       border-radius: 9999px;
-      background: rgba(30, 41, 59, 0.6);
+      background: rgba(255, 255, 255, 0.05);
       border: 1px solid var(--border);
-      font-size: 0.68rem;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+    }
+    .status-indicator {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--text-muted);
+    }
+    .status-badge.running {
+      border-color: rgba(59, 130, 246, 0.4);
+      color: #60a5fa;
+    }
+    .status-badge.running .status-indicator {
+      background: #3b82f6;
+    }
+    .status-badge.completed {
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #f87171;
+    }
+    .status-badge.completed .status-indicator {
+      background: #ef4444;
+    }
+
+    .header-link-btn {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.03);
+      transition: all 0.15s ease;
+    }
+    .header-link-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+    }
+
+    /* =========================================================================
+       MAIN VIEW CONTAINER & TABS
+       ========================================================================= */
+    .view-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .view-pane {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      height: 100%;
+      min-width: 0;
+    }
+    .view-pane.active {
+      display: flex;
+    }
+
+    /* Metric Cards Grid */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+    .metric-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.85rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .metric-title {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .metric-value {
+      font-size: 1.5rem;
       font-weight: 700;
       font-family: var(--font-mono);
-    }
-    .status-badge .dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--text-sub);
-    }
-    .status-badge.running .dot {
-      background: #38bdf8;
-      box-shadow: 0 0 10px #38bdf8;
-      animation: pulse 1.2s infinite;
-    }
-    .status-badge.running { color: #38bdf8; border-color: rgba(56, 189, 248, 0.4); }
-
-    .status-badge.completed .dot { background: #f43f5e; box-shadow: 0 0 10px #f43f5e; }
-    .status-badge.completed { color: #f43f5e; border-color: rgba(244, 63, 94, 0.4); }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(0.85); }
-    }
-
-    .btn-launch {
-      background: linear-gradient(135deg, #4f46e5, #0284c7);
-      border: none;
       color: #fff;
-      padding: 0.38rem 0.95rem;
-      border-radius: 8px;
-      font-size: 0.74rem;
-      font-weight: 800;
-      cursor: pointer;
+      line-height: 1.2;
+    }
+    .metric-card.critical .metric-value { color: #f87171; }
+    .metric-card.success .metric-value { color: #34d399; }
+    .metric-card.info .metric-value { color: #60a5fa; }
+    .metric-card.subtle .metric-value { color: #94a3b8; }
+
+    /* Pipeline Stepper */
+    .stepper-bar {
       display: flex;
       align-items: center;
-      gap: 0.35rem;
-      box-shadow: 0 0 14px var(--indigo-glow);
-      transition: all 0.2s;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.5rem 0.85rem;
+      margin-bottom: 1.25rem;
+      gap: 0.5rem;
     }
-    .btn-launch:hover:not(:disabled) {
-      transform: translateY(-1px);
-      box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
-    }
-    .btn-launch:disabled { opacity: 0.6; cursor: not-allowed; }
-
-    .btn-exit {
-      background: rgba(244, 63, 94, 0.12);
-      border: 1px solid rgba(244, 63, 94, 0.35);
-      color: #fda4af;
-      padding: 0.38rem 0.85rem;
-      border-radius: 8px;
-      font-size: 0.72rem;
-      font-weight: 800;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
-      transition: all 0.15s;
-    }
-    .btn-exit:hover { background: rgba(244, 63, 94, 0.25); color: #fff; }
-
-    /* HawkScan 5-Phase Pipeline Stepper */
-    .stepper-ribbon {
-      background: #090e1a;
-      border-bottom: 1px solid var(--border);
-      padding: 0.45rem 1.25rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.65rem;
-      flex-shrink: 0;
-    }
-
     .step-item {
       display: flex;
       align-items: center;
       gap: 0.4rem;
-      font-size: 0.7rem;
-      font-weight: 700;
-      color: var(--text-sub);
-      padding: 0.2rem 0.55rem;
-      border-radius: 6px;
-      background: rgba(15, 23, 42, 0.6);
-      border: 1px solid transparent;
-      transition: all 0.2s;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      color: var(--text-muted);
     }
     .step-item.active {
-      background: rgba(56, 189, 248, 0.15);
-      color: #38bdf8;
-      border-color: rgba(56, 189, 248, 0.4);
-      box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+      color: #60a5fa;
     }
-    .step-item.done {
+    .step-item.completed {
       color: #34d399;
-      background: rgba(16, 185, 129, 0.1);
-      border-color: rgba(16, 185, 129, 0.3);
     }
-    .step-num {
-      width: 16px;
-      height: 16px;
+    .step-item .step-num {
+      width: 18px;
+      height: 18px;
       border-radius: 50%;
-      background: rgba(255,255,255,0.1);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.62rem;
-      font-family: var(--font-mono);
-    }
-
-    /* Live Summary Metrics Bar */
-    .metrics-bar {
-      background: #040711;
-      border-bottom: 1px solid var(--border);
-      padding: 0.4rem 1.25rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-shrink: 0;
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
-    }
-
-    .metric-badges {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    .m-pill {
+      background: rgba(255, 255, 255, 0.08);
       display: inline-flex;
       align-items: center;
-      gap: 0.35rem;
-      padding: 0.15rem 0.5rem;
-      border-radius: 4px;
-      font-weight: 800;
-      font-size: 0.68rem;
+      justify-content: center;
+      font-size: 0.625rem;
+      font-family: var(--font-mono);
     }
-    .m-breach { background: rgba(244, 63, 94, 0.2); color: #fda4af; border: 1px solid rgba(244, 63, 94, 0.4); }
-    .m-discard { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.3); }
-    .m-live { background: rgba(16, 185, 129, 0.2); color: #a7f3d0; border: 1px solid rgba(16, 185, 129, 0.4); }
-    .m-static { background: rgba(99, 102, 241, 0.2); color: #c7d2fe; border: 1px solid rgba(99, 102, 241, 0.4); }
-
-    /* Workspace */
-    .workspace {
-      flex: 1;
-      display: flex;
-      height: calc(100vh - 128px);
-      overflow: hidden;
+    .step-item.active .step-num {
+      background: var(--accent-blue);
+      color: #fff;
+    }
+    .step-item.completed .step-num {
+      background: #059669;
+      color: #fff;
+    }
+    .step-divider {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      opacity: 0.4;
     }
 
-    /* Left Pane */
-    .left-pane {
+    /* Dashboard Split */
+    .dashboard-split {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 1rem;
       flex: 1;
-      border-right: 1px solid var(--border);
+      min-height: 380px;
+    }
+    .panel {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
       display: flex;
       flex-direction: column;
-      background: #03050c;
       overflow: hidden;
+      min-height: 0;
     }
-
-    .pane-tabs {
-      background: var(--bg-card);
+    .panel-header {
+      padding: 0.65rem 0.85rem;
       border-bottom: 1px solid var(--border);
       display: flex;
-      padding: 0 0.85rem;
-      gap: 0.35rem;
-      flex-shrink: 0;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: rgba(0, 0, 0, 0.1);
     }
-
-    .pane-tab-btn {
-      background: transparent;
-      border: none;
-      color: var(--text-muted);
-      padding: 0.55rem 0.75rem;
-      font-size: 0.73rem;
-      font-weight: 700;
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-      transition: all 0.15s;
-    }
-    .pane-tab-btn:hover { color: var(--text-main); }
-    .pane-tab-btn.active { color: #38bdf8; border-bottom-color: #38bdf8; }
-
-    .left-view {
+    .panel-body {
       flex: 1;
-      display: none;
-      flex-direction: column;
       overflow-y: auto;
-    }
-    .left-view.active { display: flex; }
-
-    .webview-bar {
-      background: rgba(15, 23, 42, 0.7);
-      border-bottom: 1px solid var(--border);
-      padding: 0.45rem 0.85rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 0.7rem;
-      gap: 0.5rem;
-    }
-    .addr-box {
-      background: #02040a;
-      border: 1px solid var(--border);
-      padding: 0.25rem 0.6rem;
-      border-radius: 6px;
-      font-family: var(--font-mono);
-      font-size: 0.68rem;
-      color: var(--text-main);
-      flex: 1;
+      padding: 0.75rem;
     }
 
-    iframe { width: 100%; height: 100%; border: none; background: #ffffff; }
-
-    /* Static Surface List */
-    .surface-view { padding: 1rem; display: flex; flex-direction: column; gap: 0.65rem; }
-    .route-card {
-      background: var(--bg-card-sub);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 0.6rem 0.8rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
-    }
-    .method-badge {
-      font-size: 0.62rem;
-      font-weight: 800;
-      padding: 0.15rem 0.45rem;
-      border-radius: 4px;
-    }
-    .method-GET { background: rgba(56, 189, 248, 0.2); color: #38bdf8; }
-    .method-POST { background: rgba(16, 185, 129, 0.2); color: #34d399; }
-
-    /* Right Pane */
-    .right-pane {
-      flex: 1.25;
-      display: flex;
-      flex-direction: column;
-      background: var(--bg-dark);
-      overflow: hidden;
-    }
-
-    /* SSE Thought Stream Terminal */
-    .telemetry-panel {
-      height: 165px;
-      background: #02040a;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
-      flex-shrink: 0;
-    }
-    .telemetry-header {
-      background: var(--bg-card);
-      padding: 0.35rem 1rem;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      color: var(--text-muted);
-      font-size: 0.68rem;
-      font-weight: 700;
-    }
+    /* Telemetry Log Stream */
     .telemetry-logs {
-      flex: 1;
-      padding: 0.55rem 1rem;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 0.35rem;
-    }
-    .log-row { display: flex; align-items: flex-start; gap: 0.5rem; line-height: 1.4; }
-    .log-time { color: var(--text-sub); font-size: 0.66rem; flex-shrink: 0; }
-    .stage-pill {
-      font-size: 0.62rem;
-      font-weight: 800;
-      padding: 0.08rem 0.35rem;
-      border-radius: 4px;
-      text-transform: uppercase;
-      flex-shrink: 0;
-    }
-    .stage-static_recon { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; }
-    .stage-dynamic_recon { background: rgba(56, 189, 248, 0.2); color: #7dd3fc; }
-    .stage-exploitation { background: rgba(244, 63, 94, 0.2); color: #fda4af; }
-    .stage-validation { background: rgba(245, 158, 11, 0.2); color: #fde68a; }
-    .stage-reporting { background: rgba(16, 185, 129, 0.2); color: #a7f3d0; }
-    .stage-system { background: rgba(148, 163, 184, 0.2); color: #e2e8f0; }
-    .stage-tinyfish {
-      background: linear-gradient(135deg, rgba(6, 182, 212, 0.28), rgba(59, 130, 246, 0.28));
-      color: #38bdf8;
-      border: 1px solid rgba(56, 189, 248, 0.45);
-      font-weight: 800;
-      box-shadow: 0 0 10px rgba(6, 182, 212, 0.25);
-    }
-    .stage-browser {
-      background: linear-gradient(135deg, rgba(6, 182, 212, 0.28), rgba(59, 130, 246, 0.28));
-      color: #38bdf8;
-      border: 1px solid rgba(56, 189, 248, 0.45);
-      font-weight: 800;
-      box-shadow: 0 0 10px rgba(6, 182, 212, 0.25);
-    }
-
-    /* Right Tabs Content */
-    .right-content {
-      flex: 1;
-      overflow-y: auto;
-      padding: 1rem;
-    }
-    .right-tab-pane { display: none; }
-    .right-tab-pane.active { display: block; }
-
-    /* Vulnerability Table */
-    .vuln-table-wrap {
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      overflow: hidden;
-      background: var(--bg-card);
-    }
-    .vuln-table { width: 100%; border-collapse: collapse; font-size: 0.73rem; }
-    .vuln-table th {
-      background: var(--bg-card-sub);
-      padding: 0.5rem 0.75rem;
-      font-size: 0.65rem;
-      font-weight: 800;
-      color: var(--text-sub);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      border-bottom: 1px solid var(--border);
-    }
-    .vuln-table td {
-      padding: 0.65rem 0.75rem;
-      border-bottom: 1px solid rgba(30, 41, 59, 0.5);
-    }
-    .sev-tag {
-      font-size: 0.62rem;
-      font-weight: 800;
-      padding: 0.15rem 0.45rem;
-      border-radius: 4px;
-      text-transform: uppercase;
-      display: inline-block;
-    }
-    .sev-CRITICAL { background: rgba(244, 63, 94, 0.2); color: #fda4af; border: 1px solid rgba(244, 63, 94, 0.4); }
-    .sev-HIGH     { background: rgba(245, 158, 11, 0.2); color: #fde68a; border: 1px solid rgba(245, 158, 11, 0.4); }
-    .sev-MEDIUM   { background: rgba(56, 189, 248, 0.2); color: #bae6fd; border: 1px solid rgba(56, 189, 248, 0.4); }
-
-    .drawer {
-      background: #02040a;
-      padding: 0.85rem;
-      border-top: 1px dashed var(--border);
-      font-size: 0.72rem;
-      color: var(--text-muted);
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-    .code-snippet {
-      background: #090e1a;
-      border: 1px solid var(--border);
-      padding: 0.55rem;
-      border-radius: 6px;
       font-family: var(--font-mono);
-      font-size: 0.7rem;
-      color: #e2e8f0;
-      white-space: pre-wrap;
+      font-size: 0.6875rem;
+      line-height: 1.6;
+      color: #cbd5e1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      height: 100%;
+      overflow-y: auto;
+      padding: 0.5rem;
+    }
+    .log-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
       word-break: break-all;
     }
-
-    .btn-action {
-      background: rgba(255,255,255,0.06);
-      border: 1px solid var(--border);
-      color: var(--text-main);
-      padding: 0.25rem 0.6rem;
-      border-radius: 6px;
-      font-size: 0.68rem;
-      font-weight: 700;
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.3rem;
-      transition: all 0.15s;
-    }
-    .btn-action:hover { background: rgba(56, 189, 248, 0.15); border-color: #38bdf8; color: #38bdf8; }
-
-    /* TinyFish Step Timeline & Cookie Badges */
-    .cookie-banner {
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 0.55rem 0.75rem;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .flag-chip {
-      font-size: 0.65rem;
-      padding: 0.2rem 0.5rem;
-      border-radius: 4px;
-      font-weight: 700;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.3rem;
-    }
-    .flag-bad {
-      background: rgba(244, 63, 94, 0.15);
-      border: 1px solid rgba(244, 63, 94, 0.4);
-      color: #fda4af;
-    }
-    .flag-good {
-      background: rgba(16, 185, 129, 0.15);
-      border: 1px solid rgba(16, 185, 129, 0.4);
-      color: #a7f3d0;
-    }
-    .flag-warn {
-      background: rgba(245, 158, 11, 0.15);
-      border: 1px solid rgba(245, 158, 11, 0.4);
-      color: #fde68a;
-    }
-
-    .timeline-wrap {
-      background: rgba(10, 15, 29, 0.9);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 0.65rem 0.85rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.45rem;
-    }
-    .timeline-step {
-      display: flex;
-      align-items: center;
-      gap: 0.55rem;
-      font-size: 0.68rem;
-      border-bottom: 1px solid rgba(30, 41, 59, 0.6);
-      padding-bottom: 0.4rem;
-    }
-    .timeline-step:last-child {
-      border-bottom: none;
-      padding-bottom: 0;
-    }
-    .step-num {
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: rgba(56, 189, 248, 0.15);
-      color: #38bdf8;
-      border: 1px solid rgba(56, 189, 248, 0.4);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 0.62rem;
-      flex-shrink: 0;
-    }
-    .step-chip {
-      background: rgba(99, 102, 241, 0.2);
-      border: 1px solid rgba(99, 102, 241, 0.4);
-      color: #a5b4fc;
-      font-weight: 700;
-      padding: 0.15rem 0.45rem;
-      border-radius: 4px;
-      font-size: 0.62rem;
-      font-family: var(--font-mono);
-      flex-shrink: 0;
-    }
-    .step-target {
-      color: #e2e8f0;
-      font-family: var(--font-mono);
-      font-size: 0.65rem;
-      background: rgba(0, 0, 0, 0.4);
-      padding: 0.15rem 0.4rem;
-      border-radius: 4px;
-      border: 1px solid var(--border);
-      max-width: 260px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-    .step-desc {
+    .log-time {
       color: var(--text-muted);
-      flex: 1;
-    }
-    .step-status {
-      font-weight: 700;
-      font-size: 0.6rem;
-      padding: 0.1rem 0.4rem;
-      border-radius: 4px;
+      font-size: 0.625rem;
       flex-shrink: 0;
     }
-    .step-status.SUCCESS, .step-status.BREACH_CONFIRMED {
-      background: rgba(16, 185, 129, 0.15);
-      color: #a7f3d0;
-      border: 1px solid rgba(16, 185, 129, 0.4);
+    .stage-pill {
+      font-size: 0.5625rem;
+      font-weight: 700;
+      padding: 0.05rem 0.35rem;
+      border-radius: 3px;
+      text-transform: uppercase;
+      flex-shrink: 0;
+      letter-spacing: 0.02em;
     }
-    .step-status.WARNING, .step-status.WARNING_NO_HTTPONLY {
-      background: rgba(245, 158, 11, 0.15);
-      color: #fde68a;
-      border: 1px solid rgba(245, 158, 11, 0.4);
+    .stage-system { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; }
+    .stage-static_recon { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
+    .stage-dynamic_recon { background: rgba(6, 182, 212, 0.15); color: #67e8f9; }
+    .stage-exploitation { background: rgba(239, 68, 68, 0.18); color: #fca5a5; }
+    .stage-validation { background: rgba(245, 158, 11, 0.18); color: #fcd34d; }
+    .stage-reporting { background: rgba(16, 185, 129, 0.18); color: #86efac; }
+    .stage-tinyfish, .stage-browser { background: rgba(59, 130, 246, 0.18); color: #93c5fd; }
+
+    /* Tables */
+    .table-container {
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.75rem;
+      text-align: left;
+    }
+    th {
+      padding: 0.55rem 0.75rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+      text-transform: uppercase;
+      font-size: 0.625rem;
+      letter-spacing: 0.04em;
+    }
+    td {
+      padding: 0.65rem 0.75rem;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      vertical-align: middle;
+    }
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--text-primary);
     }
 
-    /* TinyFish Browser Chrome Window & Viewport */
-    .tf-browser-bar {
-      background: #090e1a;
-      border-bottom: 1px solid var(--border);
+    .sev-tag {
+      font-size: 0.625rem;
+      font-weight: 700;
+      padding: 0.12rem 0.45rem;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      display: inline-block;
+    }
+    .sev-CRITICAL { background: rgba(239, 68, 68, 0.18); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .sev-HIGH { background: rgba(249, 115, 22, 0.18); color: #fb923c; border: 1px solid rgba(249, 115, 22, 0.3); }
+    .sev-MEDIUM { background: rgba(245, 158, 11, 0.18); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .sev-LOW { background: rgba(59, 130, 246, 0.18); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); }
+
+    /* Finding Details Drawer */
+    .drawer {
+      padding: 0.85rem 1rem;
+      background: var(--bg-surface-elevated);
+      border-left: 3px solid var(--accent-red);
+      margin: 0.35rem 0;
       display: flex;
       flex-direction: column;
+      gap: 0.65rem;
+      font-size: 0.75rem;
     }
-    .tf-title-row {
+    .code-snippet {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.6rem 0.75rem;
+      font-family: var(--font-mono);
+      font-size: 0.6875rem;
+      color: #cbd5e1;
+      white-space: pre-wrap;
+      word-break: break-all;
+      overflow-x: auto;
+    }
+
+    /* Attack Surface Route Cards */
+    .route-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.5rem 0.75rem;
+      margin-bottom: 0.35rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0.35rem 0.75rem;
-      background: #060a14;
-      border-bottom: 1px solid rgba(30, 41, 59, 0.7);
+      font-size: 0.75rem;
     }
-    .tf-tab-chip {
-      display: flex;
-      align-items: center;
-      gap: 0.45rem;
-      background: #0d1322;
-      border: 1px solid var(--border);
-      border-bottom: none;
-      padding: 0.25rem 0.65rem;
-      border-radius: 6px 6px 0 0;
-      font-size: 0.68rem;
+    .method-badge {
+      font-size: 0.625rem;
       font-weight: 700;
-      color: #f8fafc;
-    }
-    .tf-fish-icon { font-size: 0.85rem; }
-    .tf-engine-tag {
-      font-size: 0.58rem;
-      font-weight: 800;
+      font-family: var(--font-mono);
       padding: 0.1rem 0.35rem;
       border-radius: 3px;
-      background: linear-gradient(135deg, #4f46e5, #06b6d4);
-      color: #fff;
-      letter-spacing: 0.05em;
     }
-    .tf-meta-chips {
+    .method-GET { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+    .method-POST { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+    .method-PUT { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+    .method-DELETE { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+
+    /* =========================================================================
+       TINYFISH BROWSER VIEWPORT
+       ========================================================================= */
+    .browser-window {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      overflow: hidden;
+      min-height: 480px;
+    }
+    .browser-toolbar {
+      padding: 0.5rem 0.75rem;
+      background: rgba(0, 0, 0, 0.2);
+      border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      font-size: 0.62rem;
     }
-    .tf-chip {
-      color: var(--text-sub);
-      font-family: var(--font-mono);
-    }
-    .tf-status-chip {
-      padding: 0.1rem 0.4rem;
-      border-radius: 4px;
-      font-weight: 800;
-      font-size: 0.6rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.25rem;
-    }
-    .tf-status-chip.online {
-      background: rgba(16, 185, 129, 0.15);
-      color: #10b981;
-      border: 1px solid rgba(16, 185, 129, 0.3);
-    }
-    .tf-nav-row {
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      padding: 0.4rem 0.75rem;
-      background: #090e1a;
-    }
-    .btn-icon {
-      background: rgba(255, 255, 255, 0.05);
+    .browser-nav-btn {
+      background: transparent;
       border: 1px solid var(--border);
-      color: var(--text-main);
-      width: 24px;
-      height: 24px;
+      color: var(--text-secondary);
       border-radius: 4px;
+      width: 26px;
+      height: 26px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      font-size: 0.75rem;
     }
-    .btn-icon:hover { background: rgba(56, 189, 248, 0.2); color: #38bdf8; }
-    .tf-addr-bar {
-      flex: 1;
+    .browser-nav-btn:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+    }
+    .browser-addr-wrap {
       display: flex;
       align-items: center;
-      gap: 0.35rem;
-      background: #02040a;
+      background: var(--bg-input);
       border: 1px solid var(--border);
-      padding: 0.2rem 0.5rem;
-      border-radius: 6px;
-    }
-    .tf-lock-icon { font-size: 0.65rem; color: #10b981; }
-    .tf-url-input {
+      border-radius: 4px;
+      padding: 0.2rem 0.55rem;
       flex: 1;
+      gap: 0.35rem;
+    }
+    .browser-addr-input {
       background: transparent;
       border: none;
       outline: none;
-      color: #f8fafc;
+      color: #fff;
       font-family: var(--font-mono);
-      font-size: 0.68rem;
+      font-size: 0.6875rem;
+      width: 100%;
     }
-    .btn-danger {
-      background: rgba(244, 63, 94, 0.15) !important;
-      border-color: rgba(244, 63, 94, 0.4) !important;
-      color: #fda4af !important;
-    }
-    .btn-danger:hover {
-      background: #f43f5e !important;
-      color: #fff !important;
-    }
-    .tf-viewport-area {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      overflow: hidden;
-      background: #000;
-    }
-    .tf-hud-banner {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      right: 10px;
-      z-index: 20;
-      background: rgba(6, 10, 20, 0.88);
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(6, 182, 212, 0.4);
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
-      padding: 0.35rem 0.65rem;
-      border-radius: 6px;
+
+    .browser-hud {
+      background: #0b1120;
+      border-bottom: 1px solid var(--border);
+      padding: 0.28rem 0.75rem;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      font-size: 0.68rem;
-      pointer-events: none;
+      gap: 0.45rem;
+      font-size: 0.6875rem;
+      font-family: var(--font-mono);
+      color: #60a5fa;
     }
-    .tf-hud-pulse {
-      width: 8px;
-      height: 8px;
+    .hud-dot {
+      width: 6px;
+      height: 6px;
       border-radius: 50%;
-      background: #06b6d4;
-      box-shadow: 0 0 10px #06b6d4;
-      animation: tfPulse 1.5s infinite;
-      flex-shrink: 0;
+      background: #3b82f6;
     }
-    @keyframes tfPulse {
-      0% { transform: scale(0.9); opacity: 0.8; }
-      50% { transform: scale(1.4); opacity: 1; box-shadow: 0 0 14px #06b6d4; }
-      100% { transform: scale(0.9); opacity: 0.8; }
-    }
-    .tf-hud-prefix {
-      color: #06b6d4;
-      font-weight: 800;
-      letter-spacing: 0.05em;
-    }
-    .tf-hud-text {
-      color: #e2e8f0;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .tf-viewport-frame {
+
+    .browser-viewport {
       flex: 1;
       position: relative;
+      background: #000;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .browser-frame {
       width: 100%;
       height: 100%;
+      border: none;
       background: #fff;
     }
-    .tf-bottom-drawer {
-      background: #070a14;
-      border-top: 1px solid var(--border);
-      display: none;
-      flex-direction: column;
+    .browser-screencast {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .browser-drawer {
       height: 190px;
-      z-index: 30;
-      flex-shrink: 0;
-    }
-    .tf-bottom-drawer.open { display: flex; }
-    .tf-drawer-tabs {
-      background: #0d1322;
-      border-bottom: 1px solid var(--border);
+      background: var(--bg-surface-elevated);
+      border-top: 1px solid var(--border);
       display: flex;
-      align-items: center;
+      flex-direction: column;
+    }
+    .drawer-tabs {
+      display: flex;
+      background: rgba(0, 0, 0, 0.15);
+      border-bottom: 1px solid var(--border);
       padding: 0 0.5rem;
-      justify-content: space-between;
     }
-    .tf-drawer-tab {
-      padding: 0.35rem 0.65rem;
-      font-size: 0.68rem;
-      font-weight: 700;
-      color: var(--text-muted);
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-    }
-    .tf-drawer-tab.active {
-      color: #38bdf8;
-      border-bottom-color: #38bdf8;
-    }
-    .tf-drawer-close {
-      background: none;
+    .drawer-tab-btn {
+      background: transparent;
       border: none;
+      border-bottom: 2px solid transparent;
       color: var(--text-muted);
+      font-size: 0.6875rem;
+      font-weight: 600;
+      padding: 0.4rem 0.75rem;
       cursor: pointer;
-      padding: 0.2rem 0.4rem;
-      font-size: 0.75rem;
     }
-    .tf-drawer-close:hover { color: #fff; }
-    .tf-drawer-pane {
+    .drawer-tab-btn.active {
+      color: #60a5fa;
+      border-bottom-color: #3b82f6;
+    }
+    .drawer-pane {
+      display: none;
       flex: 1;
       overflow-y: auto;
       padding: 0.5rem;
-      display: none;
     }
-    .tf-drawer-pane.active { display: block; }
-    .tf-cookie-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.68rem;
-    }
-    .tf-cookie-table th {
-      text-align: left;
-      padding: 0.35rem;
-      border-bottom: 1px solid var(--border);
-      color: var(--text-sub);
-      font-size: 0.6rem;
-    }
-    .tf-cookie-table td {
-      padding: 0.4rem 0.35rem;
-      border-bottom: 1px solid rgba(30, 41, 59, 0.5);
-    }
-    .tf-console-input-row {
+    .drawer-pane.active {
       display: flex;
-      gap: 0.4rem;
-      margin-bottom: 0.4rem;
+      flex-direction: column;
     }
-    .tf-console-input-row input {
-      flex: 1;
-      background: #02040a;
-      border: 1px solid var(--border);
+
+    /* Sub Tabs in Vulnerabilities */
+    .sub-tabs {
+      display: flex;
+      gap: 0.35rem;
+      margin-bottom: 0.85rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.4rem;
+    }
+    .sub-tab-btn {
+      background: transparent;
+      border: 1px solid transparent;
       border-radius: 4px;
-      padding: 0.3rem 0.5rem;
+      padding: 0.3rem 0.65rem;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .sub-tab-btn.active {
+      background: var(--bg-surface);
+      border-color: var(--border);
       color: #fff;
-      font-family: var(--font-mono);
-      font-size: 0.68rem;
-      outline: none;
     }
-    .tf-console-output {
-      background: #02040a;
+
+    .btn-action {
+      background: rgba(255, 255, 255, 0.05);
       border: 1px solid var(--border);
+      color: var(--text-secondary);
+      padding: 0.25rem 0.55rem;
       border-radius: 4px;
-      padding: 0.4rem 0.6rem;
-      font-family: var(--font-mono);
-      font-size: 0.68rem;
-      color: #38bdf8;
-      white-space: pre-wrap;
-      max-height: 90px;
-      overflow-y: auto;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-action:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
     }
   </style>
 </head>
 <body>
 
-  <!-- Top Command Header -->
-  <header>
-    <div class="brand-group">
-      <div class="brand-logo">🔷</div>
-      <div class="brand-titles">
-        <h1>HAWKSCAN<span>·AI</span></h1>
-        <p>AUTONOMOUS WHITE-BOX AI PENTESTER · PROOF-BY-EXPLOITATION</p>
+  <!-- =========================================================================
+       APP SIDEBAR
+       ========================================================================= -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-icon">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <div class="sidebar-brand-text">
+        <h1>HAWKSCAN</h1>
+        <span>Proof-by-Exploitation</span>
       </div>
     </div>
 
-    <!-- Omnibar: Target URL + Local Repo Path -->
-    <div class="omnibar-group">
-      <div class="input-pill">
-        <span class="input-label">-u URL:</span>
-        <input
-          type="text"
-          id="targetUrlInput"
-          class="omnibar-input"
-          value="http://127.0.0.1:8000"
-          placeholder="http://target-app.local:8000"
-          onkeydown="if(event.key==='Enter') startPentest()"
-        />
-      </div>
-      <div class="input-pill">
-        <span class="input-label">-r REPO:</span>
-        <input
-          type="text"
-          id="repoPathInput"
-          class="omnibar-input"
-          value="."
-          placeholder="/path/to/local/repo"
-          onkeydown="if(event.key==='Enter') startPentest()"
-        />
-      </div>
-    </div>
-
-    <div class="top-controls">
-      <!-- Target Security Posture Widget -->
-      <div class="posture-control" style="display:flex;align-items:center;gap:0.35rem;background:rgba(255,255,255,0.04);padding:0.25rem 0.6rem;border-radius:8px;border:1px solid var(--border);">
-        <span style="font-size:0.63rem;color:var(--text-sub);font-weight:700;text-transform:uppercase;">Target State:</span>
-        <span id="postureBadge" style="font-size:0.68rem;font-weight:800;padding:0.18rem 0.45rem;border-radius:4px;background:rgba(244,63,94,0.18);color:#fda4af;border:1px solid rgba(244,63,94,0.4);display:inline-flex;align-items:center;gap:0.25rem;">
-          <span style="font-size:0.55rem;">🔴</span> INSECURE
-        </span>
-        <button id="btnMakeInsecure" onclick="setTargetSecurity(false)" title="Make Target App Insecure (Enable IDOR & SQLi flaws)" style="background:rgba(244,63,94,0.14);border:1px solid rgba(244,63,94,0.35);color:#fda4af;padding:0.22rem 0.5rem;border-radius:5px;font-size:0.65rem;font-weight:700;cursor:pointer;">
-          ⚡ Make Insecure
-        </button>
-        <button id="btnMakeSecure" onclick="setTargetSecurity(true)" title="Apply Security Patches (Mitigate IDOR & SQLi)" style="background:rgba(16,185,129,0.14);border:1px solid rgba(16,185,129,0.35);color:#6ee7b7;padding:0.22rem 0.5rem;border-radius:5px;font-size:0.65rem;font-weight:700;cursor:pointer;">
-          🛡️ Apply Patches
-        </button>
+    <nav class="sidebar-nav">
+      <div class="nav-item active" onclick="switchMainView('dashboard', this)">
+        <div class="nav-left">
+          <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span>Dashboard</span>
+        </div>
       </div>
 
-      <div id="statusBadge" class="status-badge">
-        <span class="dot">●</span>
-        <span id="statusText">IDLE</span>
+      <div class="nav-item" onclick="switchMainView('vulnerabilities', this)">
+        <div class="nav-left">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <span>Vulnerabilities</span>
+        </div>
+        <span class="nav-badge" id="findingsTabCount">0</span>
       </div>
 
-      <button id="btnLaunch" class="btn-launch" onclick="startPentest()">
-        <span>⚡</span> RUN PENTEST
+      <div class="nav-item" onclick="switchMainView('surface', this)">
+        <div class="nav-left">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          <span>Attack Surface</span>
+        </div>
+        <span class="nav-badge" id="tabRouteCount">0</span>
+      </div>
+
+      <div class="nav-item" onclick="switchMainView('browser', this)">
+        <div class="nav-left">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+          <span>TinyFish Autonomous Browser</span>
+        </div>
+        <span class="nav-badge" id="tfNavCookieCount">0</span>
+      </div>
+
+      <div class="nav-item" onclick="switchMainView('telemetry', this)">
+        <div class="nav-left">
+          <svg class="icon" viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+          <span>Audit Logs</span>
+        </div>
+      </div>
+
+      <div class="nav-item" onclick="switchMainView('reports', this)">
+        <div class="nav-left">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          <span>Reports &amp; Patches</span>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-card">
+        <div class="sidebar-card-label">
+          <span>Target State</span>
+          <span id="postureBadge" style="font-size: 0.58rem; padding: 0.1rem 0.35rem; border-radius: 3px; background: rgba(239, 68, 68, 0.15); color: #fca5a5; font-family: var(--font-mono); font-weight: 700;">INSECURE</span>
+        </div>
+        <div class="btn-toggle-group">
+          <button id="btnMakeInsecure" class="btn-toggle danger" onclick="setTargetSecurity(false)" title="Enable IDOR &amp; SQLi Flaws">Make Insecure</button>
+          <button id="btnMakeSecure" class="btn-toggle success" onclick="setTargetSecurity(true)" title="Apply Security Patches">Apply Patches</button>
+        </div>
+      </div>
+
+      <div class="sidebar-card">
+        <div class="sidebar-card-label">
+          <span>Browser Engine</span>
+          <span id="tfEngineModeBadge" class="nav-badge" style="background: rgba(59, 130, 246, 0.2); color: #93c5fd;">TINYFISH_CLOUD</span>
+        </div>
+        <div style="font-size: 0.625rem; color: var(--text-muted); font-family: var(--font-mono); display: flex; justify-content: space-between;">
+          <span>Session</span>
+          <span id="tfSessionId" style="color: var(--text-secondary);">standby</span>
+        </div>
+      </div>
+
+      <button class="btn-sidebar-exit" onclick="confirmShutdown()" title="Shut down HawkScan process group (Ctrl+Q)">
+        <svg class="icon-sm" viewBox="0 0 24 24"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+        <span>Stop Services</span>
       </button>
+    </div>
+  </aside>
 
-      <button class="btn-exit" onclick="confirmShutdown()" title="Shut down servers (Ctrl+Q)">
-        <span>🛑</span> QUIT
-      </button>
-    </div>
-  </header>
-
-  <!-- 5-Phase Pipeline Stepper -->
-  <div class="stepper-ribbon">
-    <div class="step-item" id="step-1">
-      <span class="step-num">1</span>
-      <span>Static Code Recon</span>
-    </div>
-    <div style="color: var(--text-sub); font-size: 0.65rem;">→</div>
-    <div class="step-item" id="step-2">
-      <span class="step-num">2</span>
-      <span>Dynamic Target Crawl</span>
-    </div>
-    <div style="color: var(--text-sub); font-size: 0.65rem;">→</div>
-    <div class="step-item" id="step-3">
-      <span class="step-num">3</span>
-      <span>Autonomous Exploitation</span>
-    </div>
-    <div style="color: var(--text-sub); font-size: 0.65rem;">→</div>
-    <div class="step-item" id="step-4">
-      <span class="step-num">4</span>
-      <span>Proof-by-Exploitation</span>
-    </div>
-    <div style="color: var(--text-sub); font-size: 0.65rem;">→</div>
-    <div class="step-item" id="step-5">
-      <span class="step-num">5</span>
-      <span>SARIF &amp; Reports</span>
-    </div>
-  </div>
-
-  <!-- Summary Metrics Bar -->
-  <div class="metrics-bar">
-    <div class="metric-badges">
-      <span class="m-pill m-breach">🔴 VERIFIED BREACHES: <span id="mBreaches">0</span></span>
-      <span class="m-pill m-discard">🛡️ FALSE POSITIVES DISCARDED: <span id="mDiscarded">0</span></span>
-      <span class="m-pill m-live">🌐 LIVE ENDPOINTS: <span id="mLive">0</span></span>
-      <span class="m-pill m-static">🗺️ STATIC ROUTES: <span id="mStatic">0</span></span>
-    </div>
-    <div style="color: var(--text-sub); display: flex; gap: 0.85rem;">
-      <span>SCAN TIME: <span id="mDuration">0.0s</span></span>
-      <span>STATUS: <span id="mStateLabel" style="color: #38bdf8;">READY</span></span>
-    </div>
-  </div>
-
-  <!-- Main Workspace -->
-  <div class="workspace">
-
-    <!-- Left Pane -->
-    <div class="left-pane">
-      <div class="pane-tabs">
-        <button class="pane-tab-btn active" data-tab="left-tinyfish" onclick="switchLeftTab('left-tinyfish', this)">🐟 TinyFish Autonomous Browser</button>
-        <button class="pane-tab-btn" data-tab="left-web" onclick="switchLeftTab('left-web', this)">🌐 Target Live Webview</button>
-        <button class="pane-tab-btn" data-tab="left-surface" onclick="switchLeftTab('left-surface', this)">🗺️ Static Code Surface (<span id="tabRouteCount">0</span>)</button>
+  <!-- =========================================================================
+       APP MAIN CONTENT
+       ========================================================================= -->
+  <main class="app-main">
+    <!-- Header with Target Website Omnibar -->
+    <header class="app-header">
+      <div class="header-omnibar">
+        <div class="omnibar-wrap">
+          <span class="omnibar-label">TARGET WEBSITE:</span>
+          <input
+            type="text"
+            id="targetUrlInput"
+            class="omnibar-input"
+            value="http://127.0.0.1:8000"
+            placeholder="https://example.com or http://127.0.0.1:8000"
+            onkeydown="if(event.key==='Enter') startPentest()"
+          />
+        </div>
+        <button id="btnLaunch" class="btn-primary" onclick="startPentest()">
+          <svg class="icon-sm" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          <span>Run Scan</span>
+        </button>
       </div>
 
-      <!-- Left View 1: TinyFish Autonomous Browser Window -->
-      <div id="left-tinyfish" class="left-view active" style="display: flex; flex-direction: column;">
-        <div class="tf-browser-bar">
-          <!-- Window Title Bar -->
-          <div class="tf-title-row">
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <div class="tf-tab-chip">
-                <span class="tf-fish-icon">🐟</span>
-                <span>TinyFish Autonomous Agent</span>
-                <span id="tfEngineModeBadge" class="tf-engine-tag" style="background: linear-gradient(135deg, #06b6d4, #3b82f6);">TINYFISH_CLOUD</span>
-              </div>
-            </div>
-            <div class="tf-meta-chips">
-              <span id="tfTunnelChip" class="tf-chip" style="display: none; color: #c084fc; border-color: rgba(192, 132, 252, 0.4); font-size: 0.65rem;" title="Cloudflare Quick Tunnel Active">
-                🚇 <span id="tfTunnelUrlText" style="color: #e9d5ff;">tunnel...</span>
-              </span>
-              <span class="tf-chip" title="Session Identifier">SID: <span id="tfSessionId" style="color: #38bdf8;">init...</span></span>
-              <button id="tfSwitchEngineBtn" class="btn-action" onclick="toggleBrowserEngineMode()" title="Switch between Local Playwright and TinyFish Cloud" style="font-size: 0.65rem; padding: 0.15rem 0.45rem; background: rgba(167, 139, 250, 0.12); border-color: rgba(167, 139, 250, 0.4); color: #a78bfa;">
-                💻 Switch to Local
-              </button>
-              <span id="tfStatusChip" class="tf-status-chip online">
-                <span style="font-size: 0.55rem;">●</span> <span id="tfStatusText">READY</span>
-              </span>
-              <button class="btn-action" onclick="toggleCookieDrawer('cookies')" style="font-size: 0.65rem; padding: 0.15rem 0.45rem;">
-                🍪 <span id="tfCookieCountBadge">0 Cookies</span>
-              </button>
-              <button class="btn-action" onclick="toggleViewMode()" id="tfToggleViewBtn" title="Toggle between Live Interactive Frame and Screencast Image" style="font-size: 0.65rem; padding: 0.15rem 0.45rem;">
-                🖼️ Screencast
-              </button>
-            </div>
+      <div class="header-actions">
+        <div id="statusBadge" class="status-badge">
+          <span class="status-indicator"></span>
+          <span id="statusText">IDLE</span>
+        </div>
+        <a href="/api/export/sarif" target="_blank" class="header-link-btn" title="Download OASIS SARIF 2.1.0 JSON">SARIF 2.1.0</a>
+        <a href="/api/export/markdown" target="_blank" class="header-link-btn" title="Download Markdown Audit Report">Markdown</a>
+      </div>
+    </header>
+
+    <!-- Dynamic Main View Content Area -->
+    <div class="view-content">
+
+      <!-- =====================================================================
+           VIEW 1: DASHBOARD
+           ===================================================================== -->
+      <section id="view-dashboard" class="view-pane active">
+        <!-- 4 Key Metric Cards -->
+        <div class="metrics-grid">
+          <div class="metric-card critical">
+            <span class="metric-title">Confirmed Breaches</span>
+            <span class="metric-value" id="mBreaches">0</span>
           </div>
-
-          <!-- Browser Address & Action Controls -->
-          <div class="tf-nav-row">
-            <button class="btn-icon" onclick="navigateTinyFishNav('back')" title="Back">◀</button>
-            <button class="btn-icon" onclick="navigateTinyFishNav('forward')" title="Forward">▶</button>
-            <button class="btn-icon" onclick="reloadTinyFish()" title="Reload Frame & Screencast">↻</button>
-            
-            <div class="tf-addr-bar">
-              <span class="tf-lock-icon">🔒</span>
-              <input
-                type="text"
-                id="tfUrlInput"
-                class="tf-url-input"
-                value="http://127.0.0.1:8000"
-                placeholder="http://target:8000"
-                onkeydown="if(event.key==='Enter') navigateTinyFish()"
-              />
-            </div>
-            
-            <button class="btn-action" onclick="navigateTinyFish()" style="font-size: 0.68rem; font-weight: 700; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border-color: rgba(56, 189, 248, 0.4);">
-              Go
-            </button>
-            <button class="btn-action btn-danger" onclick="evalDocCookie()" title="Evaluate document.cookie in TinyFish runtime to test for XSS / session theft">
-              🧪 Probe Cookies
-            </button>
-            <button class="btn-action" onclick="toggleCookieDrawer('console')" title="Open Live DOM JavaScript Console">
-              💻 Console
-            </button>
-            <button class="btn-action" onclick="toggleCookieDrawer('logs')" title="Open Live TinyFish Terminal Engine Logs">
-              📜 Logs
-            </button>
+          <div class="metric-card subtle">
+            <span class="metric-title">False Positives Suppressed</span>
+            <span class="metric-value" id="mDiscarded">0</span>
+          </div>
+          <div class="metric-card info">
+            <span class="metric-title">Live Endpoints Verified</span>
+            <span class="metric-value" id="mLive">0</span>
+          </div>
+          <div class="metric-card success">
+            <span class="metric-title">Attack Surface Routes</span>
+            <span class="metric-value" id="mStatic">0</span>
           </div>
         </div>
 
-        <!-- Viewport Area with HUD Overlay Banner -->
-        <div class="tf-viewport-area">
-          <div class="tf-hud-banner" id="tfHudBanner">
-            <div class="tf-hud-pulse" id="tfHudPulse"></div>
-            <span class="tf-hud-prefix">TINYFISH HUD:</span>
-            <span class="tf-hud-text" id="tfHudText">Autonomous Browser Standby · Probes Ready</span>
+        <!-- Pipeline Stepper -->
+        <div class="stepper-bar">
+          <div class="step-item" id="step-1">
+            <span class="step-num">1</span>
+            <span>Surface Recon</span>
           </div>
-
-          <!-- Interactive Target Frame (Default) -->
-          <iframe
-            id="tfInteractiveFrame"
-            class="tf-viewport-frame"
-            src="http://127.0.0.1:8000"
-            title="TinyFish Live Browser Viewport"
-            style="display: block; border: none;"
-          ></iframe>
-
-          <!-- Engine Base64 Screencast Overlay (Alternative View) -->
-          <div id="tfScreencastWrap" style="display: none; width: 100%; height: 100%; overflow: auto; background: #0b0f19; align-items: center; justify-content: center; position: relative;">
-            <img id="tfScreencastImg" src="" alt="TinyFish Viewport Screencast" style="max-width: 100%; max-height: 100%; object-fit: contain; box-shadow: 0 4px 20px rgba(0,0,0,0.5); display: none; margin: auto;" />
-            <div id="tfScreencastEmpty" style="color: var(--text-sub); font-size: 0.72rem; text-align: center; padding: 2rem; margin: auto;">
-              No screencast frame captured yet. Run a pentest or click "Probe Cookies" to take a screenshot.
-            </div>
+          <span class="step-divider">/</span>
+          <div class="step-item" id="step-2">
+            <span class="step-num">2</span>
+            <span>Dynamic Crawl</span>
+          </div>
+          <span class="step-divider">/</span>
+          <div class="step-item" id="step-3">
+            <span class="step-num">3</span>
+            <span>Exploitation</span>
+          </div>
+          <span class="step-divider">/</span>
+          <div class="step-item" id="step-4">
+            <span class="step-num">4</span>
+            <span>Proof-by-Exploitation</span>
+          </div>
+          <span class="step-divider">/</span>
+          <div class="step-item" id="step-5">
+            <span class="step-num">5</span>
+            <span>Reporting</span>
+          </div>
+          <div style="margin-left: auto; font-size: 0.6875rem; color: var(--text-muted); font-family: var(--font-mono);">
+            Duration: <span id="mDuration" style="color: #fff;">0.0s</span>
           </div>
         </div>
 
-        <!-- Collapsible Bottom Drawer: Cookie Jar, JS Console & Terminal Logs -->
-        <div class="tf-bottom-drawer" id="tfBottomDrawer">
-          <div class="tf-drawer-tabs">
-            <div style="display: flex; gap: 0.5rem;">
-              <div class="tf-drawer-tab active" id="tfTabCookies" onclick="switchTfDrawerTab('cookies')">
-                🍪 Cookie Jar &amp; Security Flags (<span id="tfDrawerCookieCount">0</span>)
-              </div>
-              <div class="tf-drawer-tab" id="tfTabConsole" onclick="switchTfDrawerTab('console')">
-                💻 JavaScript DOM Console
-              </div>
-              <div class="tf-drawer-tab" id="tfTabLogs" onclick="switchTfDrawerTab('logs')">
-                📜 Terminal Engine Logs (<span id="tfDrawerLogCount">0</span>)
+        <!-- 2-Column Split: Findings Summary & Real-time Logs -->
+        <div class="dashboard-split">
+          <div class="panel">
+            <div class="panel-header">
+              <span>Verified Security Breaches</span>
+              <button class="btn-action" onclick="switchMainView('vulnerabilities')">View All</button>
+            </div>
+            <div class="panel-body" style="padding: 0;">
+              <div class="table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th style="width: 90px;">Severity</th>
+                      <th>Vulnerability</th>
+                      <th>Endpoint</th>
+                      <th style="text-align: right;">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="findingsTableBody">
+                    <tr>
+                      <td colspan="4" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
+                        No scans executed yet. Enter a target website above and click "Run Scan".
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
-            <button class="tf-drawer-close" onclick="toggleCookieDrawer()" title="Close Drawer">✕</button>
           </div>
 
-          <!-- Drawer Pane 1: Cookies Table -->
-          <div class="tf-drawer-pane active" id="tfPaneCookies">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-              <span style="font-size: 0.65rem; color: var(--text-sub);">
-                Active session cookies extracted from TinyFish browser context:
-              </span>
-              <button class="btn-action" onclick="fetchBrowserCookies()" style="font-size: 0.62rem; padding: 0.1rem 0.4rem;">
-                ↻ Refresh Cookies
-              </button>
+          <div class="panel">
+            <div class="panel-header">
+              <span>Agent Telemetry Feed</span>
+              <span id="mStateLabel" style="font-size: 0.625rem; font-family: var(--font-mono); color: var(--text-muted);">READY</span>
             </div>
-            <div style="overflow-x: auto;">
-              <table class="tf-cookie-table">
+            <div class="panel-body" style="padding: 0; background: var(--bg-input);">
+              <div class="telemetry-logs" id="telemetryLogs">
+                <div class="log-row">
+                  <span class="log-time">[00:00:00]</span>
+                  <span class="stage-pill stage-system">SYSTEM</span>
+                  <span>HawkScan security assessment engine initialized. Standing by.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           VIEW 2: VULNERABILITIES (FULL PAGE)
+           ===================================================================== -->
+      <section id="view-vulnerabilities" class="view-pane">
+        <div class="sub-tabs">
+          <button class="sub-tab-btn active" id="subTabVerified" onclick="switchVulnSubTab('verified')">
+            Verified Breaches (<span id="findingsTabCount2">0</span>)
+          </button>
+          <button class="sub-tab-btn" id="subTabSuppressed" onclick="switchVulnSubTab('suppressed')">
+            Suppressed False Positives (<span id="suppressedTabCount">0</span>)
+          </button>
+        </div>
+
+        <div id="vulnPaneVerified" class="panel" style="flex: 1;">
+          <div class="panel-header">
+            <span>Proof-by-Exploitation Verified Vulnerabilities</span>
+            <span style="font-size: 0.6875rem; color: var(--text-muted);">Enforcing "No Exploit, No Report" doctrine</span>
+          </div>
+          <div class="panel-body" style="padding: 0;">
+            <div class="table-container">
+              <table>
                 <thead>
                   <tr>
-                    <th>NAME</th>
-                    <th>VALUE</th>
-                    <th>DOMAIN</th>
-                    <th>PATH</th>
-                    <th>HTTPONLY</th>
-                    <th>SECURE</th>
-                    <th>SAMESITE</th>
-                    <th>EXPOSURE</th>
+                    <th style="width: 100px;">Severity</th>
+                    <th>Vulnerability Title</th>
+                    <th>CWE</th>
+                    <th>Endpoint</th>
+                    <th style="text-align: right;">Inspection</th>
                   </tr>
                 </thead>
-                <tbody id="tfCookieTableBody">
-                  <tr>
-                    <td colspan="8" style="text-align: center; color: var(--text-sub); padding: 1rem;">
-                      No cookies loaded. Navigate or start a pentest to populate.
-                    </td>
-                  </tr>
+                <tbody id="findingsTableBodyFull">
+                  <!-- Mirrored/Synced findings -->
                 </tbody>
               </table>
             </div>
           </div>
+        </div>
 
-          <!-- Drawer Pane 2: JS Console -->
-          <div class="tf-drawer-pane" id="tfPaneConsole">
-            <div class="tf-console-input-row">
+        <div id="vulnPaneSuppressed" class="panel" style="flex: 1; display: none;">
+          <div class="panel-header">
+            <span>Suppressed Theoretical Candidates</span>
+            <span style="font-size: 0.6875rem; color: var(--text-muted);">Discarded because exploitation failed against target</span>
+          </div>
+          <div class="panel-body">
+            <div id="suppressedContainer" style="display: flex; flex-direction: column; gap: 0.5rem;">
+              <div style="text-align: center; color: var(--text-muted); padding: 2.5rem;">
+                No theoretical vulnerabilities suppressed.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           VIEW 3: ATTACK SURFACE
+           ===================================================================== -->
+      <section id="view-surface" class="view-pane">
+        <div class="panel" style="flex: 1;">
+          <div class="panel-header">
+            <span>Discovered Attack Surface Routes</span>
+            <span style="font-size: 0.6875rem; color: var(--text-muted);">Extracted via Static Code Analysis &amp; Dynamic Web Crawling</span>
+          </div>
+          <div class="panel-body">
+            <div id="surfaceContainer">
+              <div style="text-align: center; color: var(--text-muted); padding: 2.5rem;">
+                Run a scan to map the target application's attack surface routes and endpoints.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           VIEW 4: BROWSER VIEWPORT
+           ===================================================================== -->
+      <section id="view-browser" class="view-pane">
+        <div class="browser-window">
+          <!-- Browser Controls & Status -->
+          <div class="browser-toolbar">
+            <button class="browser-nav-btn" onclick="navigateTinyFishNav('back')" title="Back">
+              <svg class="icon-sm" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <button class="browser-nav-btn" onclick="navigateTinyFishNav('forward')" title="Forward">
+              <svg class="icon-sm" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+            <button class="browser-nav-btn" onclick="reloadFrame()" title="Reload">
+              <svg class="icon-sm" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            </button>
+
+            <div class="browser-addr-wrap">
+              <svg class="icon-sm" style="color: var(--text-muted);" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
               <input
                 type="text"
-                id="tfConsoleInput"
-                placeholder="document.cookie, document.title, window.location.href..."
-                value="document.cookie"
-                onkeydown="if(event.key==='Enter') runConsoleEval()"
+                id="tfUrlInput"
+                class="browser-addr-input"
+                value="http://127.0.0.1:8000"
+                onkeydown="if(event.key==='Enter') navigateTinyFish()"
               />
-              <button class="btn-action" onclick="runConsoleEval()" style="font-size: 0.65rem;">
-                ▶ Run Eval
+            </div>
+
+            <button class="btn-action" onclick="navigateTinyFish()">Go</button>
+            <button class="btn-action" onclick="probeCookies()">Probe Cookies</button>
+            <button class="btn-action" id="tfToggleViewBtn" onclick="toggleViewMode()">Screencast</button>
+            <button class="btn-action" id="tfSwitchEngineBtn" onclick="switchEngine()">Switch to Local</button>
+            <span id="tfTunnelChip" style="font-size: 0.625rem; font-family: var(--font-mono); color: #38bdf8; display: none;">
+              Tunnel Active: <span id="tfTunnelUrlText"></span>
+            </span>
+          </div>
+
+          <!-- Browser Agent Live HUD -->
+          <div id="tfHudBanner" class="browser-hud">
+            <span class="hud-dot" id="tfHudPulse"></span>
+            <span id="tfHudText">TINYFISH HUD: Standing by.</span>
+          </div>
+
+          <!-- Browser Viewport (Interactive iframe + Screencast Stream) -->
+          <div class="browser-viewport">
+            <iframe id="tfInteractiveFrame" class="browser-frame" src="http://127.0.0.1:8000"></iframe>
+            <div id="tfScreencastWrap" style="display: none; width: 100%; height: 100%; align-items: center; justify-content: center;">
+              <img id="tfScreencastImg" class="browser-screencast" src="" alt="Live Screencast" style="display: none;" />
+              <div id="tfScreencastEmpty" style="color: var(--text-muted); font-size: 0.75rem;">Waiting for browser viewport screencast frames...</div>
+            </div>
+          </div>
+
+          <!-- Bottom Drawer for Cookies, Console, and Logs -->
+          <div id="tfBottomDrawer" class="browser-drawer">
+            <div class="drawer-tabs">
+              <button class="drawer-tab-btn active" id="tfTabCookies" onclick="switchDrawerTab('cookies')">
+                Cookie Jar (<span id="tfCookieCountBadge">0</span>)
+              </button>
+              <button class="drawer-tab-btn" id="tfTabConsole" onclick="switchDrawerTab('console')">
+                DOM JS Console
+              </button>
+              <button class="drawer-tab-btn" id="tfTabLogs" onclick="switchDrawerTab('logs')">
+                Browser Engine Logs (<span id="tfDrawerLogCount">0</span>)
               </button>
             </div>
-            <div style="display: flex; gap: 0.35rem; margin-bottom: 0.35rem;">
-              <button class="btn-action" onclick="quickEval('document.cookie')" style="font-size: 0.6rem; padding: 0.1rem 0.35rem;">document.cookie</button>
-              <button class="btn-action" onclick="quickEval('document.title')" style="font-size: 0.6rem; padding: 0.1rem 0.35rem;">document.title</button>
-              <button class="btn-action" onclick="quickEval('window.location.href')" style="font-size: 0.6rem; padding: 0.1rem 0.35rem;">window.location.href</button>
-              <button class="btn-action" onclick="quickEval('JSON.stringify(window.localStorage)')" style="font-size: 0.6rem; padding: 0.1rem 0.35rem;">localStorage</button>
-            </div>
-            <div class="tf-console-output" id="tfConsoleOutput">// TinyFish JavaScript DOM Console Output Ready...</div>
-          </div>
 
-          <!-- Drawer Pane 3: TinyFish Live Terminal Logs -->
-          <div class="tf-drawer-pane" id="tfPaneLogs">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
-              <span style="font-size: 0.65rem; color: var(--text-sub);">
-                Live execution trace streaming from TinyFish autonomous browser runtime:
-              </span>
-              <button class="btn-action" onclick="document.getElementById('tfDrawerLogContent').innerHTML=''" style="font-size: 0.62rem; padding: 0.1rem 0.4rem;">
-                Clear Logs
-              </button>
+            <div id="tfPaneCookies" class="drawer-pane active">
+              <div class="table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Domain</th>
+                      <th>Path</th>
+                      <th>HttpOnly</th>
+                      <th>Secure</th>
+                      <th>SameSite</th>
+                      <th>Value</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tfCookieTableBody">
+                    <tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No cookies detected in active browser jar.</td></tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
-            <div id="tfDrawerLogContent" style="background: #02040a; border: 1px solid var(--border); border-radius: 4px; padding: 0.45rem 0.6rem; font-family: var(--font-mono); font-size: 0.67rem; color: #7dd3fc; height: 110px; overflow-y: auto;">
-              <div style="color: #64748b; font-size: 0.65rem;">// TinyFish Autonomous Browser Engine Terminal Trace Active...</div>
+
+            <div id="tfPaneConsole" class="drawer-pane">
+              <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <input type="text" id="tfConsoleInput" class="browser-addr-input" style="border: 1px solid var(--border); border-radius: 4px; padding: 0.3rem 0.5rem;" placeholder="e.g. document.cookie || location.href" onkeydown="if(event.key==='Enter') evalConsoleJs()" />
+                <button class="btn-action" onclick="evalConsoleJs()">Execute</button>
+              </div>
+              <pre id="tfConsoleOutput" class="code-snippet" style="flex: 1; margin: 0;">Evaluation output will appear here.</pre>
             </div>
-          </div>
-        </div>
-      </div>
 
-      <!-- Left View 2: Target Live Webview -->
-      <div id="left-web" class="left-view">
-        <div class="webview-bar">
-          <div class="addr-box">🔒 <span id="frameAddr">http://127.0.0.1:8000</span></div>
-          <button class="btn-action" onclick="reloadFrame()">↻ Reload</button>
-          <a class="btn-action" id="extLink" href="http://127.0.0.1:8000" target="_blank">↗ New Tab</a>
-        </div>
-        <div style="flex: 1; position: relative;">
-          <iframe id="targetFrame" src="http://127.0.0.1:8000" title="Target Live Application"></iframe>
-        </div>
-      </div>
-
-      <!-- Left View 3: Static Code Surface -->
-      <div id="left-surface" class="left-view">
-        <div class="surface-view" id="surfaceContainer">
-          <div style="text-align: center; color: var(--text-sub); padding: 2rem; font-size: 0.74rem;">
-            Run HawkScan pentest to extract static code routes and attack vectors.
+            <div id="tfPaneLogs" class="drawer-pane">
+              <div id="tfDrawerLogContent" class="code-snippet" style="flex: 1; margin: 0;"></div>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
+
+      <!-- =====================================================================
+           VIEW 5: TELEMETRY & LOGS (FULL MONOSPACE TERMINAL)
+           ===================================================================== -->
+      <section id="view-telemetry" class="view-pane">
+        <div class="panel" style="flex: 1;">
+          <div class="panel-header">
+            <span>HawkScan Execution &amp; Audit Logs</span>
+            <button class="btn-action" onclick="document.getElementById('fullTelemetryLogs').innerHTML=''">Clear View</button>
+          </div>
+          <div class="panel-body" style="background: var(--bg-input);">
+            <div class="telemetry-logs" id="fullTelemetryLogs"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           VIEW 6: REPORTS & EXPORTS
+           ===================================================================== -->
+      <section id="view-reports" class="view-pane">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+          <div class="panel" style="padding: 1.25rem;">
+            <h3 style="font-size: 0.875rem; margin-bottom: 0.4rem;">OASIS SARIF 2.1.0</h3>
+            <p style="color: var(--text-muted); font-size: 0.75rem; margin-bottom: 0.85rem;">Industry standard static &amp; dynamic security analysis format for GitHub Security and CI/CD pipelines.</p>
+            <a href="/api/export/sarif" target="_blank" class="btn-primary" style="text-decoration: none; display: inline-flex;">Download SARIF 2.1.0</a>
+          </div>
+
+          <div class="panel" style="padding: 1.25rem;">
+            <h3 style="font-size: 0.875rem; margin-bottom: 0.4rem;">Markdown Audit Report</h3>
+            <p style="color: var(--text-muted); font-size: 0.75rem; margin-bottom: 0.85rem;">Human-readable security assessment documentation with reproducible PoCs and remediation advice.</p>
+            <a href="/api/export/markdown" target="_blank" class="btn-primary" style="text-decoration: none; display: inline-flex;">Download Markdown Report</a>
+          </div>
+        </div>
+
+        <div class="panel" style="flex: 1;">
+          <div class="panel-header">
+            <span>Automated Remediation Patches (Git Diff)</span>
+          </div>
+          <div class="panel-body">
+            <div id="patchesContainer">
+              <div style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                No remediation patches generated yet.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
     </div>
+  </main>
 
-    <!-- Right Pane: Telemetry Stream & Verified Findings -->
-    <div class="right-pane">
-      <!-- Real-time SSE Telemetry -->
-      <div class="telemetry-panel">
-        <div class="telemetry-header">
-          <span>⚡ HAWKSCAN AGENT TELEMETRY STREAM</span>
-          <span style="font-size: 0.65rem; color: #38bdf8;">LIVE SSE FEED</span>
-        </div>
-        <div class="telemetry-logs" id="telemetryLogs">
-          <div class="log-row">
-            <span class="log-time">[00:00:00]</span>
-            <span class="stage-pill stage-system">SYSTEM</span>
-            <span>HawkScan Autonomous AI Pentester initialized. Standing by.</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Right Pane Tabs -->
-      <div class="pane-tabs">
-        <button class="pane-tab-btn active" onclick="switchRightTab('tab-findings')">📋 Verified Vulnerabilities (<span id="findingsTabCount">0</span>)</button>
-        <button class="pane-tab-btn" onclick="switchRightTab('tab-suppressed')">🛡️ Suppressed False Positives (<span id="suppressedTabCount">0</span>)</button>
-        <button class="pane-tab-btn" onclick="switchRightTab('tab-patches')">🛠️ Remediation Patches</button>
-        <button class="pane-tab-btn" onclick="switchRightTab('tab-exports')">📦 SARIF &amp; Exports</button>
-      </div>
-
-      <div class="right-content">
-
-        <!-- Tab 1: Verified Vulnerabilities (Proof-by-Exploitation) -->
-        <div id="tab-findings" class="right-tab-pane active">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-            <div style="font-size: 0.72rem; color: var(--text-muted);">
-              Enforcing doctrine: <strong>"No Exploit, No Report"</strong>. Only breaches proven by working execution:
-            </div>
-            <div style="display: flex; gap: 0.35rem;">
-              <a href="/api/export/sarif" download class="btn-action">📥 SARIF 2.1.0</a>
-              <a href="/api/export/markdown" download class="btn-action">📄 Markdown</a>
-            </div>
-          </div>
-
-          <div class="vuln-table-wrap">
-            <table class="vuln-table">
-              <thead>
-                <tr>
-                  <th style="width: 80px;">Severity</th>
-                  <th>Vulnerability Title</th>
-                  <th style="width: 140px;">CWE / OWASP</th>
-                  <th style="width: 130px;">Endpoint</th>
-                  <th style="width: 70px; text-align: right;">PoC</th>
-                </tr>
-              </thead>
-              <tbody id="findingsTableBody">
-                <tr>
-                  <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-sub);">
-                    No verified breaches yet. Click <strong>RUN PENTEST</strong> to begin.
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Tab 2: Suppressed False Positives -->
-        <div id="tab-suppressed" class="right-tab-pane">
-          <div style="font-size: 0.74rem; color: var(--text-muted); margin-bottom: 0.75rem;">
-            Theoretical warnings and static code hints discarded because live exploitation could not achieve a confirmed breach:
-          </div>
-          <div id="suppressedContainer" style="display: flex; flex-direction: column; gap: 0.5rem;">
-            <div style="text-align: center; color: var(--text-sub); padding: 2rem; font-size: 0.74rem;">
-              No false positives logged.
-            </div>
-          </div>
-        </div>
-
-        <!-- Tab 3: Remediation Git Diffs -->
-        <div id="tab-patches" class="right-tab-pane">
-          <div style="font-size: 0.74rem; color: var(--text-muted); margin-bottom: 0.75rem;">
-            Verified code patches resolving the root cause of confirmed vulnerabilities:
-          </div>
-          <div id="patchesContainer" style="display: flex; flex-direction: column; gap: 0.85rem;">
-            <div style="text-align: center; color: var(--text-sub); padding: 2rem; font-size: 0.74rem;">
-              Run pentest to generate unified code patches.
-            </div>
-          </div>
-        </div>
-
-        <!-- Tab 4: SARIF & Exports -->
-        <div id="tab-exports" class="right-tab-pane">
-          <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem;">
-            <div style="font-size: 0.95rem; font-weight: 700; color: #38bdf8;">
-              📦 CI/CD Security Artifacts &amp; Standardized Reporting
-            </div>
-            <div style="font-size: 0.74rem; color: var(--text-muted); line-height: 1.5;">
-              HawkScan exports standardized machine-readable results ready for automated ingestion into GitHub Advanced Security, GitLab CI/CD, and Jira security workflows.
-            </div>
-            <div style="display: flex; gap: 0.65rem; flex-wrap: wrap;">
-              <a href="/api/export/sarif" class="btn-action" style="padding: 0.5rem 0.85rem;">
-                📥 Download SARIF 2.1.0 (.sarif)
-              </a>
-              <a href="/api/export/markdown" class="btn-action" style="padding: 0.5rem 0.85rem;">
-                📄 Download Markdown Pentest Report (.md)
-              </a>
-              <button class="btn-action" onclick="fetchJSONReport()" style="padding: 0.5rem 0.85rem;">
-                📦 Export Full JSON Dossier
-              </button>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
+  <!-- =========================================================================
+       SCRIPTS
+       ========================================================================= -->
   <script>
-    let eventSource = null;
     let currentDossier = null;
+    let tfActiveView = 'frame';
+    let tfActiveEngine = 'TINYFISH_CLOUD';
+    let activeMainView = 'dashboard';
 
-    window.addEventListener('DOMContentLoaded', () => {
-      initSSE();
-      loadLatestReport();
-      fetchBrowserStatus();
-    });
-
-    function initSSE() {
-      if (eventSource) eventSource.close();
-      eventSource = new EventSource('/api/stream');
-
-      eventSource.onmessage = (e) => {
-        try {
-          const data = JSON.parse(e.data);
-          appendLog(data.stage || 'system', data.message || JSON.stringify(data));
-
-          if (data.event_type === 'phase_started' || data.event_type === 'phase_completed') {
-            updateStepper(data.stage, data.event_type);
-          } else if (data.event_type === 'pipeline_completed' && data.details && data.details.dossier) {
-            renderDossier(data.details.dossier);
-            setStatus('completed', 'PENTEST COMPLETE');
-            fetchBrowserStatus();
-          } else if (data.event_type === 'pipeline_started') {
-            setStatus('running', 'PENTESTING TARGET');
-          }
-
-          if (data.stage === 'browser' || data.stage === 'exploitation') {
-            updateTinyFishLiveHud(data.message);
-            if (data.details) {
-              if (data.details.url) {
-                const urlInp = document.getElementById('tfUrlInput');
-                if (urlInp) urlInp.value = data.details.url;
-                const iframe = document.getElementById('tfInteractiveFrame');
-                if (iframe && iframe.src !== data.details.url) iframe.src = data.details.url;
-              }
-              if (data.details.screenshot_b64) {
-                updateScreencastImg(data.details.screenshot_b64);
-              }
-              if (data.details.cookies) {
-                renderCookieTable(data.details.cookies);
-              }
-            }
-          }
-        } catch (err) {
-          console.error('SSE Error:', err);
-        }
-      };
-
-      eventSource.onerror = () => {
-        setTimeout(initSSE, 3000);
-      };
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
     }
 
-    let tfLogCount = 0;
+    function switchMainView(viewName, navEl) {
+      activeMainView = viewName;
+      document.querySelectorAll('.view-pane').forEach(el => el.classList.remove('active'));
+      const targetPane = document.getElementById(`view-${viewName}`);
+      if (targetPane) targetPane.classList.add('active');
 
-    function appendLog(stage, message) {
-      const logs = document.getElementById('telemetryLogs');
-      if (!logs) return;
-      const timeStr = new Date().toTimeString().split(' ')[0];
-      const div = document.createElement('div');
-      div.className = 'log-row';
-      const isTinyFish = (stage === 'tinyfish' || stage === 'browser');
-      const badgeText = isTinyFish ? '🐟 TINYFISH' : stage.toUpperCase();
-      div.innerHTML = `
-        <span class="log-time">[${timeStr}]</span>
-        <span class="stage-pill stage-${stage}">${badgeText}</span>
-        <span style="${isTinyFish ? 'color: #7dd3fc; font-weight: 600;' : ''}">${escapeHtml(message)}</span>
-      `;
-      logs.appendChild(div);
-      logs.scrollTop = logs.scrollHeight;
+      document.querySelectorAll('.sidebar-nav .nav-item').forEach(el => el.classList.remove('active'));
+      if (navEl) {
+        navEl.classList.add('active');
+      } else {
+        const item = document.querySelector(`.sidebar-nav .nav-item[onclick*="${viewName}"]`);
+        if (item) item.classList.add('active');
+      }
 
-      // Also stream to TinyFish Drawer Live Logs
-      if (isTinyFish) {
-        tfLogCount++;
-        const logBadge = document.getElementById('tfDrawerLogCount');
-        if (logBadge) logBadge.textContent = tfLogCount;
-        const tfDrawerLogs = document.getElementById('tfDrawerLogContent');
-        if (tfDrawerLogs) {
-          const row = document.createElement('div');
-          row.style.marginBottom = '0.2rem';
-          row.style.lineHeight = '1.4';
-          row.innerHTML = `<span style="color: #64748b;">[${timeStr}]</span> <span style="color: #38bdf8; font-weight: 700;">[TINYFISH]</span> <span style="color: #e2e8f0;">${escapeHtml(message)}</span>`;
-          tfDrawerLogs.appendChild(row);
-          tfDrawerLogs.scrollTop = tfDrawerLogs.scrollHeight;
-        }
+      if (viewName === 'browser') {
+        fetchBrowserStatus();
       }
     }
 
-    function escapeHtml(str) {
-      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    function switchVulnSubTab(tabName) {
+      document.getElementById('subTabVerified').classList.toggle('active', tabName === 'verified');
+      document.getElementById('subTabSuppressed').classList.toggle('active', tabName === 'suppressed');
+      document.getElementById('vulnPaneVerified').style.display = tabName === 'verified' ? 'flex' : 'none';
+      document.getElementById('vulnPaneSuppressed').style.display = tabName === 'suppressed' ? 'flex' : 'none';
     }
 
-    function setStatus(className, text) {
+    let currentScanState = 'idle';
+
+    function setStatus(state, text) {
+      currentScanState = state;
       const badge = document.getElementById('statusBadge');
-      badge.className = `status-badge ${className}`;
+      badge.className = `status-badge ${state}`;
       document.getElementById('statusText').textContent = text;
       document.getElementById('mStateLabel').textContent = text;
       const btn = document.getElementById('btnLaunch');
-      if (className === 'running') {
-        btn.disabled = true;
-        btn.innerHTML = '<span>⏳</span> PENTESTING...';
-      } else {
-        btn.disabled = false;
-        btn.innerHTML = '<span>⚡</span> RUN PENTEST';
-      }
+      if (btn) btn.disabled = (state === 'running');
     }
 
-    function updateStepper(stage, eventType) {
-      const stageMap = {
-        'static_recon': 'step-1',
-        'dynamic_recon': 'step-2',
-        'exploitation': 'step-3',
-        'validation': 'step-4',
-        'reporting': 'step-5'
-      };
-      const id = stageMap[stage];
-      if (id) {
-        const el = document.getElementById(id);
-        if (eventType === 'phase_started') {
-          el.className = 'step-item active';
-        } else if (eventType === 'phase_completed') {
-          el.className = 'step-item done';
+    function appendLog(stage, text) {
+      const now = new Date().toTimeString().split(' ')[0];
+      const html = `
+        <div class="log-row">
+          <span class="log-time">[${now}]</span>
+          <span class="stage-pill stage-${escapeHtml(stage)}">${escapeHtml(stage)}</span>
+          <span>${escapeHtml(text)}</span>
+        </div>
+      `;
+
+      const primaryLogs = document.getElementById('telemetryLogs');
+      if (primaryLogs) {
+        primaryLogs.insertAdjacentHTML('beforeend', html);
+        primaryLogs.scrollTop = primaryLogs.scrollHeight;
+      }
+
+      const fullLogs = document.getElementById('fullTelemetryLogs');
+      if (fullLogs) {
+        fullLogs.insertAdjacentHTML('beforeend', html);
+        fullLogs.scrollTop = fullLogs.scrollHeight;
+      }
+
+      if (stage === 'tinyfish' || stage === 'browser') {
+        const tfLog = document.getElementById('tfDrawerLogContent');
+        if (tfLog) {
+          tfLog.insertAdjacentHTML('beforeend', `[${now}] ${escapeHtml(text)}\n`);
+          tfLog.scrollTop = tfLog.scrollHeight;
         }
       }
     }
 
-    function switchLeftTab(tabId, el) {
-      document.querySelectorAll('.left-pane .pane-tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.left-view').forEach(v => v.classList.remove('active'));
-      const btn = el || (window.event ? (window.event.target.closest('.pane-tab-btn') || window.event.target) : null) || document.querySelector(`.pane-tab-btn[data-tab="${tabId}"]`);
-      if (btn) btn.classList.add('active');
-      const targetView = document.getElementById(tabId);
-      if (targetView) targetView.classList.add('active');
-    }
-
-    function switchRightTab(tabId) {
-      document.querySelectorAll('.right-pane .pane-tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.right-tab-pane').forEach(p => p.classList.remove('active'));
-      if (window.event && window.event.target) window.event.target.classList.add('active');
-      document.getElementById(tabId).classList.add('active');
-    }
-
-    function reloadFrame() {
-      const frame = document.getElementById('targetFrame');
-      const url = document.getElementById('targetUrlInput').value.trim() || 'http://127.0.0.1:8000';
-      if (frame) frame.src = url;
-      const addr = document.getElementById('frameAddr');
-      if (addr) addr.textContent = url;
-      const link = document.getElementById('extLink');
-      if (link) link.href = url;
-    }
-
-    // --- TinyFish Autonomous Browser Control & Telemetry ---
-    let tfActiveView = 'frame'; // 'frame' or 'screencast'
-
-    function updateTinyFishLiveHud(actionText) {
+    function updateTinyFishLiveHud(text) {
       const hud = document.getElementById('tfHudText');
-      if (hud && actionText) {
-        hud.textContent = actionText;
-        const pulse = document.getElementById('tfHudPulse');
-        if (pulse) {
-          pulse.style.background = '#f59e0b';
-          pulse.style.boxShadow = '0 0 12px #f59e0b';
-          setTimeout(() => {
-            pulse.style.background = '#06b6d4';
-            pulse.style.boxShadow = '0 0 10px #06b6d4';
-          }, 2000);
+      if (hud) hud.textContent = `TINYFISH HUD: ${text}`;
+    }
+
+    function connectSSE() {
+      const evt = new EventSource('/api/stream');
+      evt.onmessage = (e) => {
+        try {
+          const d = JSON.parse(e.data);
+          if (d.type === 'heartbeat') return;
+
+          appendLog(d.stage || 'system', d.message || JSON.stringify(d));
+
+          if (d.event_type === 'pipeline_started') {
+            setStatus('running', 'PENTESTING');
+          } else if (d.event_type === 'phase_started') {
+            const stepMap = {
+              'static_recon': 'step-1',
+              'dynamic_recon': 'step-2',
+              'exploitation': 'step-3',
+              'validation': 'step-4',
+              'reporting': 'step-5'
+            };
+            const sId = stepMap[d.stage];
+            if (sId) {
+              const el = document.getElementById(sId);
+              if (el) el.className = 'step-item active';
+            }
+          } else if (d.event_type === 'phase_completed') {
+            const stepMap = {
+              'static_recon': 'step-1',
+              'dynamic_recon': 'step-2',
+              'exploitation': 'step-3',
+              'validation': 'step-4',
+              'reporting': 'step-5'
+            };
+            const sId = stepMap[d.stage];
+            if (sId) {
+              const el = document.getElementById(sId);
+              if (el) el.className = 'step-item completed';
+            }
+          }
+
+          if (d.stage === 'browser' || d.stage === 'tinyfish') {
+            updateTinyFishLiveHud(d.message);
+            debouncedFetchBrowserStatus();
+          }
+
+          if ((d.stage === 'reporting' && d.event_type === 'phase_completed') ||
+              (d.stage === 'system' && d.event_type === 'pipeline_completed')) {
+            setStatus('completed', 'COMPLETED');
+            const step5 = document.getElementById('step-5');
+            if (step5) step5.className = 'step-item completed';
+            loadLatestReport();
+            debouncedFetchBrowserStatus();
+          }
+        } catch (err) {
+          console.debug('SSE parse error:', err);
         }
+      };
+
+      evt.onerror = () => {
+        setTimeout(connectSSE, 3000);
+      };
+    }
+
+    let browserStatusTimer = null;
+    function debouncedFetchBrowserStatus(optUrl) {
+      if (browserStatusTimer) return;
+      browserStatusTimer = setTimeout(() => {
+        browserStatusTimer = null;
+        fetchBrowserStatus(optUrl);
+      }, 1500);
+    }
+
+    async function fetchBrowserStatus(optUrl) {
+      const targetUrl = optUrl || document.getElementById('targetUrlInput').value.trim() || 'http://127.0.0.1:8000';
+      try {
+        const res = await fetch(`/api/browser/status?target_url=${encodeURIComponent(targetUrl)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.status === 'success' && data.state) {
+            const s = data.state;
+            tfActiveEngine = s.engine_mode;
+
+            const modeBadge = document.getElementById('tfEngineModeBadge');
+            if (modeBadge) modeBadge.textContent = s.engine_mode;
+
+            const switchBtn = document.getElementById('tfSwitchEngineBtn');
+            if (switchBtn) {
+              switchBtn.textContent = (s.engine_mode === 'TINYFISH_CLOUD') ? 'Switch to Local' : 'Switch to Cloud';
+            }
+
+            const sid = document.getElementById('tfSessionId');
+            if (sid) sid.textContent = (s.session_id || 'none').substring(0, 16);
+
+            const chip = document.getElementById('tfTunnelChip');
+            const txt = document.getElementById('tfTunnelUrlText');
+            if (chip && txt) {
+              if (s.tunnel_url) {
+                chip.style.display = 'inline-flex';
+                txt.textContent = s.tunnel_url;
+              } else {
+                chip.style.display = 'none';
+              }
+            }
+
+            if (s.cookies) {
+              renderCookieTable(s.cookies);
+            }
+
+            if (s.screenshot_b64) {
+              updateScreencastImg(s.screenshot_b64);
+            }
+          }
+        }
+      } catch (e) {
+        console.debug('Browser status error:', e);
       }
+    }
+
+    function renderCookieTable(cookies) {
+      const count = cookies ? cookies.length : 0;
+      const countBadge = document.getElementById('tfCookieCountBadge');
+      if (countBadge) countBadge.textContent = count;
+      const navBadge = document.getElementById('tfNavCookieCount');
+      if (navBadge) navBadge.textContent = count;
+
+      const tbody = document.getElementById('tfCookieTableBody');
+      if (!tbody) return;
+
+      if (!cookies || !cookies.length) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color: var(--text-muted);">No cookies found.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = cookies.map(c => `
+        <tr>
+          <td><strong style="color: #60a5fa;">${escapeHtml(c.name)}</strong></td>
+          <td>${escapeHtml(c.domain || '')}</td>
+          <td>${escapeHtml(c.path || '/')}</td>
+          <td><span class="sev-tag ${c.httpOnly ? 'sev-LOW' : 'sev-CRITICAL'}">${c.httpOnly ? 'True' : 'Missing'}</span></td>
+          <td><span class="sev-tag ${c.secure ? 'sev-LOW' : 'sev-HIGH'}">${c.secure ? 'True' : 'False'}</span></td>
+          <td>${escapeHtml(c.sameSite || 'None')}</td>
+          <td style="font-family: var(--font-mono); font-size: 0.625rem; color: var(--text-muted);">${escapeHtml(c.value ? c.value.substring(0, 32) + '...' : '')}</td>
+        </tr>
+      `).join('');
     }
 
     function updateScreencastImg(b64) {
@@ -1543,171 +1542,32 @@
       }
     }
 
-    function renderCookieTable(cookies) {
-      const tbody = document.getElementById('tfCookieTableBody');
-      const count = cookies ? cookies.length : 0;
-      const countBadge = document.getElementById('tfCookieCountBadge');
-      const drawerCount = document.getElementById('tfDrawerCookieCount');
-      if (countBadge) countBadge.textContent = `${count} Cookies`;
-      if (drawerCount) drawerCount.textContent = count;
-
-      if (!tbody) return;
-      if (!cookies || cookies.length === 0) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="8" style="text-align: center; color: var(--text-sub); padding: 1rem;">
-              No cookies currently stored in TinyFish browser context.
-            </td>
-          </tr>
-        `;
-        return;
-      }
-
-      tbody.innerHTML = cookies.map(c => {
-        const isHttpOnly = Boolean(c.http_only || c.httpOnly);
-        const isSecure = Boolean(c.secure);
-        const sameSite = c.same_site || c.sameSite || 'None';
-        const isLeaked = !isHttpOnly;
-        return `
-          <tr>
-            <td style="font-weight: 700; color: #f8fafc;">${escapeHtml(c.name || '')}</td>
-            <td style="font-family: var(--font-mono); color: #38bdf8; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(c.value || '')}">${escapeHtml(c.value || '')}</td>
-            <td style="color: var(--text-sub); font-size: 0.65rem;">${escapeHtml(c.domain || '')}</td>
-            <td style="color: var(--text-sub); font-size: 0.65rem;">${escapeHtml(c.path || '/')}</td>
-            <td>
-              <span class="flag-chip ${isHttpOnly ? 'flag-good' : 'flag-bad'}">
-                ${isHttpOnly ? '✅ True' : '❌ False'}
-              </span>
-            </td>
-            <td>
-              <span class="flag-chip ${isSecure ? 'flag-good' : 'flag-bad'}">
-                ${isSecure ? '✅ True' : '❌ False'}
-              </span>
-            </td>
-            <td>
-              <span class="flag-chip ${sameSite.toLowerCase() === 'strict' ? 'flag-good' : 'flag-warn'}">
-                ${escapeHtml(sameSite)}
-              </span>
-            </td>
-            <td>
-              <span class="flag-chip ${isLeaked ? 'flag-bad' : 'flag-good'}">
-                ${isLeaked ? '⚠️ XSS Stolen' : '🛡️ Protected'}
-              </span>
-            </td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    async function fetchBrowserStatus(optUrl) {
-      const targetUrl = optUrl || document.getElementById('targetUrlInput').value.trim() || 'http://127.0.0.1:8000';
-      try {
-        const res = await fetch(`/api/browser/status?target_url=${encodeURIComponent(targetUrl)}`);
-        if (res.ok) {
-          const data = await res.json();
-          const state = data.state || {};
-          const modeBadge = document.getElementById('tfEngineModeBadge');
-          if (modeBadge && state.engine_mode) {
-            modeBadge.textContent = state.engine_mode;
-            modeBadge.title = state.engine_reason || (state.engine_mode === 'LOCAL_PLAYWRIGHT' ? 'Local Playwright: Loopback 127.0.0.1 cannot be reached by cloud browser.' : 'TinyFish Cloud CDP active.');
-            if (state.engine_mode === 'TINYFISH_CLOUD') {
-              modeBadge.style.background = 'linear-gradient(135deg, #06b6d4, #3b82f6)';
-            } else {
-              modeBadge.style.background = 'linear-gradient(135deg, #4f46e5, #06b6d4)';
-            }
-          }
-          const switchBtn = document.getElementById('tfSwitchEngineBtn');
-          if (switchBtn && state.engine_mode) {
-            if (state.engine_mode === 'TINYFISH_CLOUD') {
-              switchBtn.textContent = '💻 Switch to Local';
-              switchBtn.title = 'Switch to Local Playwright Chromium (Required for local loopback 127.0.0.1 targets)';
-              switchBtn.style.color = '#a78bfa';
-              switchBtn.style.borderColor = 'rgba(167, 139, 250, 0.4)';
-              switchBtn.style.background = 'rgba(167, 139, 250, 0.12)';
-            } else {
-              switchBtn.textContent = '☁️ Switch to Cloud';
-              switchBtn.title = 'Switch to TinyFish Cloud CDP (For public targets like https://example.com)';
-              switchBtn.style.color = '#38bdf8';
-              switchBtn.style.borderColor = 'rgba(56, 189, 248, 0.4)';
-              switchBtn.style.background = 'rgba(56, 189, 248, 0.12)';
-            }
-          }
-          const sid = document.getElementById('tfSessionId');
-          if (sid && state.session_id) {
-            sid.textContent = state.session_id.length > 18 ? state.session_id.substring(0, 18) + '...' : state.session_id;
-            sid.title = `${state.session_id} - ${state.engine_reason || ''}`;
-          }
-          const tunnelChip = document.getElementById('tfTunnelChip');
-          const tunnelText = document.getElementById('tfTunnelUrlText');
-          if (tunnelChip && tunnelText) {
-            if (state.tunnel_url) {
-              tunnelChip.style.display = 'inline-flex';
-              const shortUrl = state.tunnel_url.replace('https://', '');
-              tunnelText.textContent = shortUrl.length > 20 ? shortUrl.substring(0, 20) + '...' : shortUrl;
-              tunnelChip.title = `Cloudflare Tunnel active: ${state.tunnel_url} -> ${state.target_url}`;
-            } else {
-              tunnelChip.style.display = 'none';
-            }
-          }
-          if (state.active_url) {
-            const urlInp = document.getElementById('tfUrlInput');
-            if (urlInp && !urlInp.matches(':focus')) {
-              urlInp.value = state.active_url;
-            }
-            const iframe = document.getElementById('tfInteractiveFrame');
-            if (iframe && (!iframe.src || iframe.src === 'about:blank' || iframe.src.endsWith('/8000/'))) {
-              if (iframe.src !== state.active_url) iframe.src = state.active_url;
-            }
-          }
-          if (state.last_action) {
-            updateTinyFishLiveHud(state.last_action);
-          }
-          if (state.screenshot_b64) {
-            updateScreencastImg(state.screenshot_b64);
-          }
-          if (state.cookies) {
-            renderCookieTable(state.cookies);
-          }
-        }
-      } catch (err) {
-        console.debug('Failed to fetch browser status:', err);
-      }
-    }
-
-    async function toggleBrowserEngineMode() {
-      const modeBadge = document.getElementById('tfEngineModeBadge');
-      const curMode = modeBadge ? modeBadge.textContent.trim() : 'LOCAL_PLAYWRIGHT';
-      const targetMode = curMode === 'TINYFISH_CLOUD' ? 'local' : 'cloud';
-      const urlInp = (document.getElementById('tfUrlInput').value || '').trim() || (targetMode === 'cloud' ? 'https://example.com' : 'http://127.0.0.1:8000');
-
-      updateTinyFishLiveHud(`ENGINE SWITCH: Requesting ${targetMode.toUpperCase()} mode...`);
+    async function switchEngine() {
+      const targetMode = (tfActiveEngine === 'TINYFISH_CLOUD') ? 'local' : 'cloud';
+      const targetUrl = document.getElementById('targetUrlInput').value.trim() || 'http://127.0.0.1:8000';
       try {
         const res = await fetch('/api/browser/reconnect', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url: urlInp, mode: targetMode })
+          body: JSON.stringify({ mode: targetMode, url: targetUrl })
         });
         if (res.ok) {
-          const data = await res.json();
-          if (data.state) {
-            await fetchBrowserStatus(data.state.active_url || urlInp);
-            updateTinyFishLiveHud(`SWITCHED: Engine active in ${data.state.engine_mode} (${data.state.session_id})`);
-          }
+          fetchBrowserStatus(targetUrl);
         }
-      } catch (err) {
-        console.error('Failed to switch engine mode:', err);
+      } catch (e) {
+        console.error('Failed to switch engine:', e);
       }
     }
 
     async function navigateTinyFish(targetUrl) {
       let url = (targetUrl || document.getElementById('tfUrlInput').value || '').trim();
       if (!url) url = 'http://127.0.0.1:8000';
-      if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('about:') && !url.startsWith('chrome:')) {
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
         url = (url.startsWith('127.0.0.1') || url.startsWith('localhost')) ? `http://${url}` : `https://${url}`;
       }
       const inp = document.getElementById('tfUrlInput');
       if (inp) inp.value = url;
-      updateTinyFishLiveHud(`COMMAND: NAVIGATE -> ${url}`);
+      updateTinyFishLiveHud(`NAVIGATING: ${url}`);
       const iframe = document.getElementById('tfInteractiveFrame');
       if (iframe) iframe.src = url;
 
@@ -1719,11 +1579,8 @@
         });
         if (res.ok) {
           const data = await res.json();
-          if (data.state) {
-            if (data.state.screenshot_b64) updateScreencastImg(data.state.screenshot_b64);
-            if (data.state.cookies) renderCookieTable(data.state.cookies);
-          }
-          updateTinyFishLiveHud(`NAVIGATED: ${url}`);
+          if (data.state && data.state.cookies) renderCookieTable(data.state.cookies);
+          if (data.state && data.state.screenshot_b64) updateScreencastImg(data.state.screenshot_b64);
         }
       } catch (e) {
         console.error('Navigate error:', e);
@@ -1736,117 +1593,68 @@
         await fetch('/api/browser/eval', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ script: script })
+          body: JSON.stringify({ expression: script })
         });
-        setTimeout(fetchBrowserStatus, 500);
       } catch (e) {
-        console.warn('Nav history error:', e);
+        console.error('Nav history error:', e);
       }
     }
 
-    function reloadTinyFish() {
+    function reloadFrame() {
       const url = document.getElementById('tfUrlInput').value.trim() || 'http://127.0.0.1:8000';
       const frame = document.getElementById('tfInteractiveFrame');
       if (frame) frame.src = url;
-      navigateTinyFish(url);
     }
 
-    async function evalDocCookie() {
-      toggleCookieDrawer('cookies');
-      updateTinyFishLiveHud('AUTONOMOUS PROBE: document.cookie DOM Evaluation...');
+    async function probeCookies() {
+      const targetUrl = document.getElementById('tfUrlInput').value.trim() || 'http://127.0.0.1:8000';
       try {
-        const res = await fetch('/api/browser/eval', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ script: 'document.cookie' })
-        });
-        if (res.ok) {
-          const data = await res.json();
-          const cookieStr = data.result || '';
-          appendLog('browser', `TinyFish evaluated document.cookie -> "${cookieStr || '(empty/HttpOnly)'}"`);
-          updateTinyFishLiveHud(`EVAL: document.cookie -> "${cookieStr.slice(0, 40)}"`);
-          if (data.state && data.state.screenshot_b64) updateScreencastImg(data.state.screenshot_b64);
-          await fetchBrowserCookies();
-        }
-      } catch (e) {
-        console.error('Eval error:', e);
-      }
-    }
-
-    async function fetchBrowserCookies() {
-      try {
-        const res = await fetch('/api/browser/cookies');
+        const res = await fetch(`/api/browser/cookies?target_url=${encodeURIComponent(targetUrl)}`);
         if (res.ok) {
           const data = await res.json();
           renderCookieTable(data.cookies || []);
+          switchDrawerTab('cookies');
         }
       } catch (e) {
-        console.warn('Could not fetch cookies:', e);
+        console.error('Probe cookies error:', e);
       }
     }
 
-    function toggleCookieDrawer(forceTab) {
-      const drawer = document.getElementById('tfBottomDrawer');
-      if (!drawer) return;
-      if (forceTab) {
-        drawer.classList.add('open');
-        switchTfDrawerTab(forceTab);
-      } else {
-        drawer.classList.toggle('open');
-      }
-    }
+    function switchDrawerTab(tabName) {
+      document.querySelectorAll('.drawer-tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.drawer-pane').forEach(p => p.classList.remove('active'));
 
-    function switchTfDrawerTab(tabName) {
-      document.querySelectorAll('.tf-drawer-tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.tf-drawer-pane').forEach(p => p.classList.remove('active'));
       if (tabName === 'cookies') {
-        const t = document.getElementById('tfTabCookies');
-        const p = document.getElementById('tfPaneCookies');
-        if (t) t.classList.add('active');
-        if (p) p.classList.add('active');
-        fetchBrowserCookies();
+        document.getElementById('tfTabCookies').classList.add('active');
+        document.getElementById('tfPaneCookies').classList.add('active');
+      } else if (tabName === 'console') {
+        document.getElementById('tfTabConsole').classList.add('active');
+        document.getElementById('tfPaneConsole').classList.add('active');
       } else if (tabName === 'logs') {
-        const t = document.getElementById('tfTabLogs');
-        const p = document.getElementById('tfPaneLogs');
-        if (t) t.classList.add('active');
-        if (p) p.classList.add('active');
-      } else {
-        const t = document.getElementById('tfTabConsole');
-        const p = document.getElementById('tfPaneConsole');
-        if (t) t.classList.add('active');
-        if (p) p.classList.add('active');
+        document.getElementById('tfTabLogs').classList.add('active');
+        document.getElementById('tfPaneLogs').classList.add('active');
       }
     }
 
-    async function runConsoleEval() {
+    async function evalConsoleJs() {
       const inp = document.getElementById('tfConsoleInput');
       const out = document.getElementById('tfConsoleOutput');
-      const expr = inp ? inp.value.trim() : 'document.cookie';
+      const expr = (inp.value || '').trim();
       if (!expr) return;
-      out.textContent = `> ${expr}\nEvaluating in TinyFish browser runtime...`;
+
       try {
         const res = await fetch('/api/browser/eval', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ script: expr })
+          body: JSON.stringify({ expression: expr })
         });
         if (res.ok) {
           const data = await res.json();
-          const formatted = typeof data.result === 'object' ? JSON.stringify(data.result, null, 2) : String(data.result);
-          out.textContent = `> ${expr}\n< ${formatted}`;
-          if (data.state && data.state.screenshot_b64) updateScreencastImg(data.state.screenshot_b64);
-        } else {
-          out.textContent = `> ${expr}\nError: HTTP ${res.status}`;
+          out.textContent = `> ${expr}\n${data.result || '(undefined)'}`;
         }
       } catch (e) {
-        out.textContent = `> ${expr}\nException: ${e.message}`;
+        out.textContent = `Error: ${e.message}`;
       }
-    }
-
-    function quickEval(code) {
-      const inp = document.getElementById('tfConsoleInput');
-      if (inp) inp.value = code;
-      runConsoleEval();
     }
 
     function toggleViewMode() {
@@ -1857,40 +1665,43 @@
         tfActiveView = 'screencast';
         if (frame) frame.style.display = 'none';
         if (screencast) screencast.style.display = 'flex';
-        if (btn) btn.innerHTML = '🌐 Interactive Frame';
+        if (btn) btn.textContent = 'Interactive Frame';
         fetchBrowserStatus();
       } else {
         tfActiveView = 'frame';
         if (frame) frame.style.display = 'block';
         if (screencast) screencast.style.display = 'none';
-        if (btn) btn.innerHTML = '🖼️ Screencast';
+        if (btn) btn.textContent = 'Screencast';
       }
     }
 
     async function startPentest() {
-      const targetUrl = document.getElementById('targetUrlInput').value.trim();
-      const repoPath = document.getElementById('repoPathInput').value.trim();
-      setStatus('running', 'PENTESTING TARGET');
+      let targetUrl = document.getElementById('targetUrlInput').value.trim();
+      if (!targetUrl) targetUrl = 'http://127.0.0.1:8000';
+      if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
+        targetUrl = (targetUrl.startsWith('127.0.0.1') || targetUrl.startsWith('localhost'))
+          ? `http://${targetUrl}`
+          : `https://${targetUrl}`;
+      }
+      document.getElementById('targetUrlInput').value = targetUrl;
+      setStatus('running', 'SCANNING');
 
-      // Update TinyFish browser url input and HUD
       const tfUrl = document.getElementById('tfUrlInput');
       if (tfUrl) tfUrl.value = targetUrl;
       const tfFrame = document.getElementById('tfInteractiveFrame');
       if (tfFrame) tfFrame.src = targetUrl;
-      updateTinyFishLiveHud(`STARTING PENTEST ON: ${targetUrl}`);
+      updateTinyFishLiveHud(`STARTING SECURITY ASSESSMENT ON: ${targetUrl}`);
 
-      // Reset stepper
       for (let i = 1; i <= 5; i++) {
-        document.getElementById(`step-${i}`).className = 'step-item';
+        const stepEl = document.getElementById(`step-${i}`);
+        if (stepEl) stepEl.className = 'step-item';
       }
-
-      reloadFrame();
 
       try {
         const resp = await fetch('/api/scan/start', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ target_url: targetUrl, repo_path: repoPath })
+          body: JSON.stringify({ target_url: targetUrl })
         });
         if (!resp.ok) setStatus('idle', 'IDLE');
       } catch (err) {
@@ -1904,7 +1715,7 @@
         const resp = await fetch('/api/scan/report');
         if (resp.ok) {
           const dossier = await resp.json();
-          if (dossier.verified_vulnerabilities && dossier.verified_vulnerabilities.length > 0) {
+          if (dossier.verified_vulnerabilities) {
             renderDossier(dossier);
           }
         }
@@ -1919,6 +1730,7 @@
 
       document.getElementById('mBreaches').textContent = sum.verified_vulnerabilities || 0;
       document.getElementById('findingsTabCount').textContent = sum.verified_vulnerabilities || 0;
+      document.getElementById('findingsTabCount2').textContent = sum.verified_vulnerabilities || 0;
       document.getElementById('mDiscarded').textContent = sum.discarded_false_positives || 0;
       document.getElementById('suppressedTabCount').textContent = sum.discarded_false_positives || 0;
       document.getElementById('mLive').textContent = sum.live_endpoints_count || 0;
@@ -1938,92 +1750,66 @@
           <div class="route-card">
             <div>
               <span class="method-badge method-${r.method}">${r.method}</span>
-              <strong style="margin-left: 0.4rem; color: #f8fafc;">${escapeHtml(r.path)}</strong>
+              <strong style="margin-left: 0.5rem; color: #fff;">${escapeHtml(r.path)}</strong>
             </div>
-            <div style="font-size: 0.65rem; color: var(--text-sub);">${escapeHtml(r.file || '')}</div>
+            <div style="font-size: 0.6875rem; color: var(--text-muted);">${escapeHtml(r.file || '')}</div>
           </div>
         `).join('');
       }
 
-      // Render Findings Table
-      const tbody = document.getElementById('findingsTableBody');
+      // Render Findings Tables (Dashboard + Full View)
       const vulns = dossier.verified_vulnerabilities || [];
-      if (!vulns.length) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-sub);">
-              No verified exploitable breaches detected.
-            </td>
-          </tr>
-        `;
-      } else {
+      const renderTableContent = (targetTbodyId, isFull) => {
+        const tbody = document.getElementById(targetTbodyId);
+        if (!tbody) return;
+
+        if (!vulns.length) {
+          tbody.innerHTML = `<tr><td colspan="${isFull ? 5 : 4}" style="text-align: center; padding: 2rem; color: var(--text-muted);">No verified security breaches detected.</td></tr>`;
+          return;
+        }
+
         tbody.innerHTML = vulns.map((v, i) => `
-          <tr onclick="toggleDrawer('drawer-${i}')" style="cursor: pointer;">
+          <tr onclick="toggleDrawer('${targetTbodyId}-drawer-${i}')" style="cursor: pointer;">
             <td><span class="sev-tag sev-${v.severity}">${v.severity}</span></td>
-            <td><strong>${escapeHtml(v.title)}</strong></td>
-            <td><span style="font-family: var(--font-mono); font-size: 0.68rem; color: #818cf8;">${escapeHtml(v.cwe_id)}</span></td>
+            <td><strong style="color: #fff;">${escapeHtml(v.title)}</strong></td>
+            ${isFull ? `<td><span style="font-family: var(--font-mono); font-size: 0.6875rem; color: #93c5fd;">${escapeHtml(v.cwe_id)}</span></td>` : ''}
             <td><code>${escapeHtml(v.target_endpoint)}</code></td>
             <td style="text-align: right;"><button class="btn-action">Inspect</button></td>
           </tr>
-          <tr id="drawer-${i}" style="display: none;">
-            <td colspan="5" style="padding: 0;">
+          <tr id="${targetTbodyId}-drawer-${i}" style="display: none;">
+            <td colspan="${isFull ? 5 : 4}" style="padding: 0;">
               <div class="drawer">
                 <div><strong>Description:</strong> ${escapeHtml(v.description)}</div>
                 ${v.cookie_audit ? `
-                  <div style="margin-top: 0.35rem;"><strong>Cookie Security Flag Audit:</strong></div>
-                  <div class="cookie-banner">
-                    <span class="flag-chip ${v.cookie_audit.http_only ? 'flag-good' : 'flag-bad'}">
-                      ${v.cookie_audit.http_only ? '✅ HttpOnly' : '❌ HttpOnly: Missing (Exposed to JS)'}
-                    </span>
-                    <span class="flag-chip ${v.cookie_audit.secure ? 'flag-good' : 'flag-bad'}">
-                      ${v.cookie_audit.secure ? '✅ Secure' : '❌ Secure: Missing (Cleartext HTTP)'}
-                    </span>
-                    <span class="flag-chip ${v.cookie_audit.same_site && v.cookie_audit.same_site.toLowerCase() === 'strict' ? 'flag-good' : 'flag-warn'}">
-                      🛡️ SameSite: ${escapeHtml(v.cookie_audit.same_site || 'None')}
-                    </span>
-                    <span class="flag-chip ${v.cookie_audit.accessible_via_js ? 'flag-bad' : 'flag-good'}">
-                      ${v.cookie_audit.accessible_via_js ? '⚠️ DOM Theft: TRUE' : '✅ DOM Theft: Blocked'}
-                    </span>
-                  </div>
-                ` : ''}
-                ${v.recorded_steps && v.recorded_steps.length ? `
-                  <div style="margin-top: 0.35rem;"><strong>Step-by-Step Exploit Playback Trace (TinyFish Browser):</strong></div>
-                  <div class="timeline-wrap">
-                    ${v.recorded_steps.map(s => `
-                      <div class="timeline-step">
-                        <span class="step-num">${s.step}</span>
-                        <span class="step-chip">${escapeHtml(s.action)}</span>
-                        <span class="step-target" title="${escapeHtml(s.target)}">${escapeHtml(s.target)}</span>
-                        <span class="step-desc">${escapeHtml(s.details)}</span>
-                        <span class="step-status ${escapeHtml(s.status)}">${escapeHtml(s.status)}</span>
-                      </div>
-                    `).join('')}
-                  </div>
+                  <div style="font-size: 0.6875rem; color: var(--text-muted);">Cookie Flag Audit: HttpOnly=${v.cookie_audit.http_only}, Secure=${v.cookie_audit.secure}, SameSite=${escapeHtml(v.cookie_audit.same_site || 'None')}</div>
                 ` : ''}
                 <div><strong>Reproducible Proof-of-Concept Command:</strong></div>
                 <div class="code-snippet">${escapeHtml(v.proof_of_concept?.exploit_command || '')}</div>
                 <div><strong>Leaked Proof Evidence:</strong></div>
                 <div class="code-snippet">${escapeHtml(JSON.stringify(v.proof_of_concept?.leaked_payload || {}, null, 2))}</div>
-                <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.4rem 0.6rem; border-radius: 4px; color: #a7f3d0;">
+                <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); padding: 0.5rem 0.65rem; border-radius: 4px; color: #86efac;">
                   <strong>Remediation:</strong> ${escapeHtml(v.remediation?.guidance || '')}
                 </div>
               </div>
             </td>
           </tr>
         `).join('');
-      }
+      };
 
-      // Render Suppressed False Positives
+      renderTableContent('findingsTableBody', false);
+      renderTableContent('findingsTableBodyFull', true);
+
+      // Render Suppressed
       const suppressed = dossier.discarded_false_positives || [];
       const suppContainer = document.getElementById('suppressedContainer');
-      if (suppressed.length) {
+      if (suppressed.length && suppContainer) {
         suppContainer.innerHTML = suppressed.map(s => `
-          <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 0.65rem 0.85rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem;">
+          <div style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: 4px; padding: 0.65rem 0.85rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem;">
             <div>
-              <strong>${escapeHtml(s.title)}</strong>
-              <div style="color: var(--text-sub); font-size: 0.68rem; margin-top: 0.15rem;">${escapeHtml(s.reason)}</div>
+              <strong style="color: #fff;">${escapeHtml(s.title)}</strong>
+              <div style="color: var(--text-muted); font-size: 0.6875rem; margin-top: 0.2rem;">${escapeHtml(s.reason)}</div>
             </div>
-            <span style="font-size: 0.62rem; color: var(--text-sub); border: 1px solid var(--border); padding: 0.1rem 0.4rem; border-radius: 4px;">DISCARDED</span>
+            <span style="font-size: 0.625rem; color: var(--text-muted); border: 1px solid var(--border); padding: 0.1rem 0.4rem; border-radius: 3px;">DISCARDED</span>
           </div>
         `).join('');
       }
@@ -2032,10 +1818,10 @@
       const patches = dossier.code_patches || {};
       const patchContainer = document.getElementById('patchesContainer');
       const patchKeys = Object.keys(patches);
-      if (patchKeys.length) {
+      if (patchKeys.length && patchContainer) {
         patchContainer.innerHTML = patchKeys.map(k => `
-          <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; overflow: hidden;">
-            <div style="background: var(--bg-card-sub); padding: 0.4rem 0.75rem; font-size: 0.7rem; font-weight: 700; border-bottom: 1px solid var(--border);">
+          <div style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 0.75rem;">
+            <div style="background: rgba(0, 0, 0, 0.2); padding: 0.4rem 0.75rem; font-size: 0.6875rem; font-weight: 700; border-bottom: 1px solid var(--border);">
               Patch: ${escapeHtml(k)}
             </div>
             <div class="code-snippet" style="border: none; border-radius: 0;">${escapeHtml(patches[k])}</div>
@@ -2046,27 +1832,16 @@
 
     function toggleDrawer(id) {
       const el = document.getElementById(id);
-      if (el) el.style.display = el.style.display === 'none' ? 'table-row' : 'none';
-    }
-
-    function fetchJSONReport() {
-      if (!currentDossier) { alert('No dossier available.'); return; }
-      const str = JSON.stringify(currentDossier, null, 2);
-      const blob = new Blob([str], { type: 'application/json' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = `hawkscan-dossier-${Date.now()}.json`;
-      a.click();
+      if (el) el.style.display = (el.style.display === 'none') ? 'table-row' : 'none';
     }
 
     function confirmShutdown() {
-      if (confirm('Shut down HawkScan Pentester and terminate all servers?')) {
+      if (confirm('Shut down HawkScan process group and terminate all services?')) {
         fetch('/api/system/shutdown', { method: 'POST' }).then(() => {
           document.body.innerHTML = `
-            <div style="display:flex;height:100vh;align-items:center;justify-content:center;flex-direction:column;gap:1.25rem;background:#070a12;color:#94a3b8;font-family:sans-serif;text-align:center;">
-              <div style="font-size:3rem;">🛑</div>
-              <h2 style="color:#f8fafc;font-size:1.4rem;">HawkScan AI Pentester Stopped</h2>
-              <p style="font-size:0.9rem;max-width:400px;line-height:1.5;">All processes have terminated cleanly. You may now close this browser tab.</p>
+            <div style="display:flex;height:100vh;align-items:center;justify-content:center;flex-direction:column;gap:1rem;background:#090d16;color:#94a3b8;font-family:sans-serif;text-align:center;">
+              <h2 style="color:#f8fafc;font-size:1.25rem;">HawkScan Terminated</h2>
+              <p style="font-size:0.875rem;max-width:380px;">All server processes and tunnels have been stopped cleanly.</p>
             </div>
           `;
         });
@@ -2082,21 +1857,13 @@
           const isInsecure = !data.idor_protection_enabled && !data.sqli_protection_enabled;
           const badge = document.getElementById('postureBadge');
           if (badge) {
-            if (isInsecure) {
-              badge.style.background = 'rgba(244,63,94,0.18)';
-              badge.style.borderColor = 'rgba(244,63,94,0.4)';
-              badge.style.color = '#fda4af';
-              badge.innerHTML = '<span style="font-size:0.55rem;">🔴</span> INSECURE';
-            } else {
-              badge.style.background = 'rgba(16,185,129,0.18)';
-              badge.style.borderColor = 'rgba(16,185,129,0.4)';
-              badge.style.color = '#6ee7b7';
-              badge.innerHTML = '<span style="font-size:0.55rem;">🟢</span> PATCHED';
-            }
+            badge.textContent = isInsecure ? 'INSECURE' : 'PATCHED';
+            badge.style.background = isInsecure ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.15)';
+            badge.style.color = isInsecure ? '#fca5a5' : '#86efac';
           }
         }
       } catch (e) {
-        console.warn("Could not check target security posture:", e);
+        console.debug('Posture check error:', e);
       }
     }
 
@@ -2108,19 +1875,38 @@
         });
         if (res.ok) {
           await checkTargetPosture();
-          appendLog('system', `Target application posture updated: ${makeSecure ? 'PATCHED / HARDENED' : 'INSECURE / EXPLOITABLE'}`);
-        } else {
-          appendLog('system', `Failed to toggle security posture on ${targetUrl}: HTTP ${res.status}`);
+          appendLog('system', `Target application posture updated: ${makeSecure ? 'PATCHED' : 'INSECURE'}`);
         }
       } catch (e) {
-        appendLog('system', `Error contacting target: ${e.message}`);
+        appendLog('system', `Error toggling security posture: ${e.message}`);
       }
     }
 
     window.addEventListener('DOMContentLoaded', () => {
+      connectSSE();
       checkTargetPosture();
-      // Periodically poll posture every 5 seconds
+      fetchBrowserStatus();
+      loadLatestReport();
       setInterval(checkTargetPosture, 5000);
+      setInterval(async () => {
+        if (currentScanState === 'running') {
+          try {
+            const resp = await fetch('/api/scan/report');
+            if (resp.ok) {
+              const dossier = await resp.json();
+              if (dossier.status === 'COMPLETED') {
+                setStatus('completed', 'COMPLETED');
+                for (let i = 1; i <= 5; i++) {
+                  const stepEl = document.getElementById(`step-${i}`);
+                  if (stepEl) stepEl.className = 'step-item completed';
+                }
+                renderDossier(dossier);
+                debouncedFetchBrowserStatus();
+              }
+            }
+          } catch (e) {}
+        }
+      }, 2500);
     });
 
     window.addEventListener('keydown', (e) => {

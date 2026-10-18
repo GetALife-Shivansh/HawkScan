@@ -126,11 +126,11 @@ class ScanRequest(BaseModel):
     repo_path: Optional[str] = None
 
 
-async def run_pipeline_task(target_url: str, repo_path: str):
+async def run_pipeline_task(target_url: str, repo_path: Optional[str] = None):
     global current_dossier
     current_dossier["status"] = "RUNNING"
     current_dossier["metadata"]["target_url"] = target_url
-    current_dossier["metadata"]["repo_path"] = repo_path
+    current_dossier["metadata"]["repo_path"] = repo_path or "Target Website"
 
     pipeline = HawkScanPipeline(
         target_url=target_url,
@@ -152,7 +152,7 @@ async def start_scan(
     background_tasks: BackgroundTasks,
     request: Request
 ):
-    """Triggers an autonomous white-box + dynamic penetration test."""
+    """Triggers an autonomous website penetration test."""
     t_url = None
     r_path = None
     try:
@@ -164,15 +164,19 @@ async def start_scan(
         pass
 
     target = (t_url or settings.DEFAULT_TARGET_URL).strip()
-    repo = (r_path or settings.DEFAULT_REPO_PATH).strip()
+    repo = r_path.strip() if r_path else None
 
     background_tasks.add_task(run_pipeline_task, target_url=target, repo_path=repo)
+
+    msg = f"HawkScan AI Pentester launched against website {target}."
+    if repo:
+        msg += f" (Repo: {repo})"
 
     return {
         "status": "started",
         "target_url": target,
         "repo_path": repo,
-        "message": f"HawkScan AI Pentester launched against {target} with repo {repo}."
+        "message": msg
     }
 
 
@@ -302,8 +306,8 @@ async def get_or_create_browser(target_url: Optional[str] = None, force_engine: 
             force_l = (force_engine.upper() in ("LOCAL", "LOCAL_PLAYWRIGHT")) if force_engine else False
             # Default to TinyFish Cloud (with Cloudflare Tunnel for localhost targets)
             await global_browser_engine.start(force_cloud=force_c, force_local=force_l)
-            if req_url:
-                await global_browser_engine.navigate(req_url)
+            if target_url:
+                await global_browser_engine.navigate(target_url)
         elif target_url and global_browser_engine.target_url != target_url:
             await global_browser_engine.navigate(target_url)
 

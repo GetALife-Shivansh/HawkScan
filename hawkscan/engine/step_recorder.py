@@ -91,13 +91,6 @@ class StepRecorder:
         ]
         for s in self.steps:
             status_badge = f"`{s.status}`"
-            if s.status in ("SUCCESS", "BREACH_CONFIRMED"):
-                status_badge = f"✅ `{s.status}`"
-            elif "WARN" in s.status:
-                status_badge = f"⚠️ `{s.status}`"
-            elif s.status == "FAILED":
-                status_badge = f"❌ `{s.status}`"
-
             clean_target = s.target.replace("|", "\\|")
             clean_details = s.details.replace("|", "\\|")
             rows.append(

@@ -92,13 +92,13 @@ The monorepo launcher initializes the target database, starts the ApexPortal tes
 *(Press `Ctrl+C`, `Ctrl+Q`, or type `q` to stop all services cleanly.)*
 
 ### 2. Run via HawkScan CLI
-You can also run HawkScan directly from the command line against any running URL and local repository:
+You can run HawkScan directly from the command line against any target website URL (with an optional local repository path):
 
 ```bash
-# Output Markdown audit report to stdout
-.venv/bin/python3 -m hawkscan.cli start -u http://127.0.0.1:8000 -r target_app -o markdown
+# Pentest any website directly (Target Website Mode)
+.venv/bin/python3 -m hawkscan.cli start -u http://127.0.0.1:8000 -o markdown
 
-# Output OASIS SARIF 2.1.0 JSON
+# Output OASIS SARIF 2.1.0 JSON (with optional source repo)
 .venv/bin/python3 -m hawkscan.cli start -u http://127.0.0.1:8000 -r target_app -o sarif
 ```
 

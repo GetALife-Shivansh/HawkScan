@@ -3,10 +3,13 @@ Coordinates Static Code Analysis, Dynamic Crawling, Parallel Exploitation,
 Proof-by-Exploitation Validation, and Artifact Generation.
 """
 
+import os
 import asyncio
 import time
 import uuid
 from typing import Dict, Any, List, Optional, Callable
+
+from hawkscan.config import settings
 
 from hawkscan.static_analyzer.repo_scanner import RepoScanner
 from hawkscan.static_analyzer.surface_mapper import SurfaceMapper
@@ -26,12 +29,12 @@ class HawkScanPipeline:
 
     def __init__(
         self,
-        target_url: str,
-        repo_path: str = ".",
+        target_url: str = settings.DEFAULT_TARGET_URL,
+        repo_path: Optional[str] = None,
         emit_callback: Optional[Callable[[str, str, str, Dict[str, Any]], Any]] = None
     ):
         self.target_url = target_url.strip()
-        self.repo_path = repo_path.strip()
+        self.repo_path = repo_path.strip() if repo_path else ""
         self.emit_callback = emit_callback
         self.scan_id = f"hawkscan-{str(uuid.uuid4())[:8]}"
 
@@ -44,29 +47,54 @@ class HawkScanPipeline:
     async def run(self) -> Dict[str, Any]:
         """Executes HawkScan's 5 phases in sequence."""
         start_time = time.time()
+        repo_display = f" | Repo: {self.repo_path}" if self.repo_path else ""
         await self.emit(
             "system",
             "pipeline_started",
-            f"HawkScan Autonomous AI Pentester initialized. Target: {self.target_url} | Repo: {self.repo_path}",
-            {"scan_id": self.scan_id, "target_url": self.target_url, "repo_path": self.repo_path}
+            f"HawkScan Autonomous AI Pentester initialized. Target: {self.target_url}{repo_display}",
+            {"scan_id": self.scan_id, "target_url": self.target_url, "repo_path": self.repo_path or "Target Website"}
         )
 
         def sync_emit(stage: str, msg: str):
             asyncio.create_task(self.emit(stage, "log", msg))
 
         # =================================================================
-        # PHASE 1: Static Code Reconnaissance & AST Surface Mapping
+        # PHASE 1: Attack Surface Reconnaissance & Route Mapping
         # =================================================================
-        await self.emit("static_recon", "phase_started", "Phase 1: Starting static repository code analysis & route mapping...")
-        scanner = RepoScanner(repo_path=self.repo_path, emit_fn=sync_emit)
-        static_results = scanner.scan_repository()
-        surface = SurfaceMapper.map_attack_surface(static_results)
-        await self.emit(
-            "static_recon",
-            "phase_completed",
-            f"Phase 1 Complete: Discovered {surface['total_routes']} routes and {surface['code_risk_count']} code risk patterns.",
-            {"static_results": static_results, "surface": surface}
-        )
+        resolved_repo = self.repo_path
+        if not resolved_repo:
+            target_app_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "target_app")
+            if ("127.0.0.1:8000" in self.target_url or "localhost:8000" in self.target_url) and os.path.exists(target_app_dir):
+                resolved_repo = target_app_dir
+
+        if resolved_repo and os.path.exists(resolved_repo):
+            await self.emit("static_recon", "phase_started", "Phase 1: Starting target repository code analysis & route mapping...")
+            scanner = RepoScanner(repo_path=resolved_repo, emit_fn=sync_emit)
+            static_results = scanner.scan_repository()
+            surface = SurfaceMapper.map_attack_surface(static_results)
+            await self.emit(
+                "static_recon",
+                "phase_completed",
+                f"Phase 1 Complete: Discovered {surface['total_routes']} routes and {surface['code_risk_count']} code risk patterns.",
+                {"static_results": static_results, "surface": surface}
+            )
+        else:
+            await self.emit("static_recon", "phase_started", f"Phase 1: Mapping target website attack surface ({self.target_url})...")
+            await self.emit("static_recon", "log", f"Target website mode: analyzing live attack surface for {self.target_url}...")
+            static_results = {
+                "repo_path": None,
+                "frameworks": ["Web Application"],
+                "routes": [],
+                "risk_flags": [],
+                "file_count": 0
+            }
+            surface = SurfaceMapper.map_attack_surface(static_results)
+            await self.emit(
+                "static_recon",
+                "phase_completed",
+                f"Phase 1 Complete: Target website attack surface initialized.",
+                {"static_results": static_results, "surface": surface}
+            )
 
         # =================================================================
         # PHASE 2: Dynamic Reconnaissance & Live Target Exploration
@@ -131,7 +159,7 @@ class HawkScanPipeline:
         metadata = {
             "scan_id": self.scan_id,
             "target_url": self.target_url,
-            "repo_path": self.repo_path,
+            "repo_path": self.repo_path or "Target Website",
             "duration_seconds": elapsed,
             "status": "COMPLETED"
         }
@@ -159,6 +187,13 @@ class HawkScanPipeline:
             "markdown_report": markdown_report,
             "code_patches": code_patches
         }
+
+        await self.emit(
+            "reporting",
+            "phase_completed",
+            f"Phase 5 Complete: Verified {len(verified_vulns)} proven breach(es). Reports & patches ready.",
+            {"dossier": dossier}
+        )
 
         await self.emit(
             "system",

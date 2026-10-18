@@ -29,7 +29,7 @@ class CookieExploitAgent:
 
     def log(self, msg: str):
         from datetime import datetime
-        print(f"\033[90m[{datetime.now().strftime('%H:%M:%S')}]\033[0m \033[1;36m[TINYFISH]\033[0m 🍪 {msg}", flush=True)
+        print(f"\033[90m[{datetime.now().strftime('%H:%M:%S')}]\033[0m \033[1;36m[TINYFISH]\033[0m {msg}", flush=True)
         if self.emit_fn:
             self.emit_fn("tinyfish", msg)
 

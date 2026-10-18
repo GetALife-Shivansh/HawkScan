@@ -15,30 +15,38 @@ class MarkdownGenerator:
     ) -> str:
         date_str = time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime())
         target_url = scan_metadata.get("target_url", "http://127.0.0.1:8000")
-        repo_path = scan_metadata.get("repo_path", ".")
+        repo_path = scan_metadata.get("repo_path")
         duration = scan_metadata.get("duration_seconds", 0)
 
         lines = [
-            "# 🦅 HawkScan Autonomous AI Penetration Testing Report",
+            "# HawkScan Autonomous AI Penetration Testing Report",
             f"**Audit Execution Date:** {date_str}  ",
             f"**Target URL:** `{target_url}`  ",
-            f"**Repository Analyzed:** `{repo_path}`  ",
+        ]
+        if repo_path and repo_path != "Target Website":
+            lines.append(f"**Repository Analyzed:** `{repo_path}`  ")
+        lines.extend([
             f"**Assessment Duration:** `{duration}s`  ",
-            f"**Methodology:** White-Box Static Code Analysis + Dynamic Exploitation (Proof-by-Exploitation)  ",
+            f"**Methodology:** Autonomous AI Pentesting + Dynamic Exploitation (Proof-by-Exploitation)  ",
             "",
             "---",
             "",
             "## 1. Executive Summary",
             "",
-            f"HawkScan conducted an autonomous white-box penetration test against `{target_url}` using source repository `{repo_path}`. "
-            f"Operating under the **'No Exploit, No Report'** doctrine, HawkScan only reports vulnerabilities that were actively substantiated by executing a working Proof-of-Concept against the running application.",
+        ])
+        if repo_path and repo_path != "Target Website":
+            lines.append(f"HawkScan conducted an autonomous white-box penetration test against `{target_url}` using source repository `{repo_path}`. ")
+        else:
+            lines.append(f"HawkScan conducted an autonomous penetration test against target website `{target_url}`. ")
+        lines.append("Operating under the **'No Exploit, No Report'** doctrine, HawkScan only reports vulnerabilities that were actively substantiated by executing a working Proof-of-Concept against the running application.")
+        lines.extend([
             "",
             f"- **Verified Exploitable Vulnerabilities:** `{len(verified_vulnerabilities)}`",
             f"- **Discarded Theoretical Candidates / False Positives:** `{len(discarded_false_positives)}`",
             "",
             "| ID | Vulnerability Title | Severity | CWE | OWASP Top 10 | Target Endpoint |",
             "| :--- | :--- | :--- | :--- | :--- | :--- |",
-        ]
+        ])
 
         if not verified_vulnerabilities:
             lines.append("| - | *No exploitable vulnerabilities confirmed* | - | - | - | - |")
@@ -86,9 +94,9 @@ class MarkdownGenerator:
             # Render Cookie Security Audit Matrix if available
             cookie_audit = v.get("cookie_audit")
             if cookie_audit:
-                h_only = "✅ Present" if cookie_audit.get("http_only") else "❌ Missing (Vulnerable)"
-                sec = "✅ Present" if cookie_audit.get("secure") else "❌ Missing (Insecure HTTP)"
-                js_acc = "⚠️ TRUE (Accessible via DOM)" if cookie_audit.get("accessible_via_js") else "✅ False (Protected)"
+                h_only = "Present" if cookie_audit.get("http_only") else "Missing (Vulnerable)"
+                sec = "Present" if cookie_audit.get("secure") else "Missing (Insecure HTTP)"
+                js_acc = "TRUE (Accessible via DOM)" if cookie_audit.get("accessible_via_js") else "False (Protected)"
                 lines.extend([
                     "#### Cookie Security Audit Matrix",
                     "| Cookie Name | HttpOnly | Secure | SameSite | Accessible via JS (DOM) |",
@@ -107,7 +115,7 @@ class MarkdownGenerator:
                 ])
                 for s in recorded_steps:
                     st = s.get("status", "SUCCESS")
-                    badge = f"✅ `{st}`" if st in ("SUCCESS", "BREACH_CONFIRMED") else (f"⚠️ `{st}`" if "WARN" in st else f"`{st}`")
+                    badge = f"`{st}`"
                     c_target = str(s.get("target", "")).replace("|", "\\|")
                     c_details = str(s.get("details", "")).replace("|", "\\|")
                     lines.append(f"| {s.get('step')} | **{s.get('action')}** | `{c_target}` | {c_details} | {badge} |")

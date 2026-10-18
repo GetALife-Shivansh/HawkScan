@@ -18,20 +18,23 @@ def main():
     subparsers = parser.add_subparsers(dest="command", help="HawkScan commands")
 
     start_cmd = subparsers.add_parser("start", help="Start an autonomous penetration test")
-    start_cmd.add_argument("-u", "--url", default=settings.DEFAULT_TARGET_URL, help="Target running application URL")
-    start_cmd.add_argument("-r", "--repo", default=settings.DEFAULT_REPO_PATH, help="Path to target source code repository")
+    start_cmd.add_argument("-u", "--url", default=settings.DEFAULT_TARGET_URL, help="Target website URL to pentest")
+    start_cmd.add_argument("-r", "--repo", default=None, help="Optional path to target source code repository")
     start_cmd.add_argument("-o", "--output", default="sarif", choices=["sarif", "markdown", "json"], help="Output report format")
 
     args = parser.parse_args()
 
     if args.command == "start":
         print(f"[*] HawkScan AI Pentester starting...")
-        print(f"[*] Target Application URL: {args.url}")
-        print(f"[*] Target Source Repository: {args.repo}")
+        print(f"[*] Target Website URL: {args.url}")
+        if args.repo:
+            print(f"[*] Target Source Repository: {args.repo}")
+        else:
+            print(f"[*] Pentest Mode: Autonomous Website Penetration Test")
 
         def cli_emitter(stage: str, event_type: str, msg: str, details: dict = None):
             if stage in ("tinyfish", "browser"):
-                print(f"\033[1;36m[TINYFISH]\033[0m 🐟 {msg}")
+                print(f"\033[1;36m[TINYFISH]\033[0m {msg}")
             else:
                 print(f"[{stage.upper()}] {msg}")
 

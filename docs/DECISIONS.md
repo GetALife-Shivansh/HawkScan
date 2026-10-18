@@ -13,6 +13,9 @@ This document serves as the chronological index of architectural, design, and te
 | [ADR-0007](decisions/0007-tinyfish-war-room-browser-viewport-and-control-plane.md) | 2026-10-17 | TinyFish War Room Browser Viewport and Control Plane Integration | Accepted | Implemented |
 | [ADR-0008](decisions/0008-dynamic-engine-arbitration-loopback-safeguard-and-cloud-cdp.md) | 2026-10-17 | Dynamic Engine Arbitration, Loopback Safeguard, and TinyFish Cloud CDP Session Management | Accepted | Implemented |
 | [ADR-0009](decisions/0009-default-tinyfish-cloud-mode-and-cloudflare-tunnel.md) | 2026-10-17 | Default TinyFish Cloud Mode and Cloudflare Quick Tunnel for Localhost Targets | Accepted | Implemented |
+| [ADR-0010](decisions/0010-target-website-first-omnibar-and-optional-repo.md) | 2026-10-18 | Target Website-First Omnibar and Optional Local Repository Architecture | Accepted | Implemented |
+| [ADR-0011](decisions/0011-enterprise-sidebar-navigation-and-clean-ui-redesign.md) | 2026-10-18 | Enterprise Sidebar Navigation and Clean UI Redesign | Accepted | Implemented |
+| [ADR-0012](decisions/0012-fix-infinite-browser-telemetry-loop-and-reporting-signal.md) | 2026-10-18 | Fix Infinite Browser Telemetry Loop and Report Generation Signal | Accepted | Implemented |
 
 ---
 
@@ -26,4 +29,9 @@ This document serves as the chronological index of architectural, design, and te
 7. **ADR-0007**: Embedded the primary TinyFish autonomous browser window, dual-mode viewport, agent HUD, cookie jar, and DOM console into War Room UI.
 8. **ADR-0008**: Established dynamic engine arbitration, loopback safeguarding for localhost targets, and seamless TinyFish Cloud CDP session acquisition.
 9. **ADR-0009**: Configured TinyFish Cloud as the default browser engine and integrated ephemeral Cloudflare Quick Tunnels to bridge localhost applications directly to AWS cloud browser agents.
+10. **ADR-0010**: Streamlined War Room UI to a website-first omnibar (`🌐 TARGET WEBSITE:`), removing the mandatory local repo input and supporting dynamic web attack surface reconnaissance alongside intelligent local testbed auto-linking.
+11. **ADR-0011**: Redesigned UI to an enterprise sidebar navigation layout with dedicated full views (Dashboard, Vulnerabilities, Attack Surface, Browser, Logs, Reports), removing screen crowding, eliminating all emojis, and adopting professional dark-slate aesthetics.
+12. **ADR-0012**: Suppressed passive telemetry from getter/inspection methods in `TinyFishEngine`, debounced client-side status polling, added Phase 5 completion emission in `HawkScanPipeline`, and implemented safety-net dossier polling to ensure report generation always cleanly concludes.
+
+
 

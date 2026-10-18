@@ -97,7 +97,7 @@ def main():
         print("\033[1;31m[-] Error: Target application failed to start on port 8000.\033[0m")
         target_proc.terminate()
         sys.exit(1)
-    print("\033[1;32m[✓] Target Application is live.\033[0m")
+    print("\033[1;32m[+] Target Application is live.\033[0m")
 
     # Step 2: Start HawkScan Server (Port 9090)
     print("\033[1;33m[2/3] Starting HawkScan AI Pentester Server (127.0.0.1:9090)...\033[0m")
@@ -113,7 +113,7 @@ def main():
         target_proc.terminate()
         hawkscan_proc.terminate()
         sys.exit(1)
-    print("\033[1;32m[✓] HawkScan AI Pentester Server is live.\033[0m")
+    print("\033[1;32m[+] HawkScan AI Pentester Server is live.\033[0m")
 
     # Step 3: Launch Browser UI
     ui_url = "http://127.0.0.1:9090"
@@ -176,7 +176,7 @@ def main():
                     except Exception:
                         pass
 
-        print("\033[1;32m[✓] All services stopped cleanly. Goodbye!\033[0m")
+        print("\033[1;32m[+] All services stopped cleanly. Goodbye!\033[0m")
         sys.exit(0)
 
     signal.signal(signal.SIGINT, shutdown)

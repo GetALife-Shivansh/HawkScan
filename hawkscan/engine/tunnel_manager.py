@@ -91,11 +91,11 @@ class CloudflareTunnelManager:
 
             bin_path = self.find_cloudflared_binary()
             if not bin_path:
-                self._log("⚠️ cloudflared binary not found on system PATH. Cloudflare tunnel disabled.", level="WARNING")
+                self._log("cloudflared binary not found on system PATH. Cloudflare tunnel disabled.", level="WARNING")
                 return None
 
             self.local_target_url = normalized_local
-            self._log(f"🚇 Provisioning Cloudflare Quick Tunnel for {normalized_local}...")
+            self._log(f"Provisioning Cloudflare Quick Tunnel for {normalized_local}...")
             self._found_event = asyncio.Event()
             self.public_url = None
 
@@ -109,7 +109,7 @@ class CloudflareTunnelManager:
                     stderr=asyncio.subprocess.PIPE
                 )
             except Exception as e:
-                self._log(f"❌ Failed to spawn cloudflared process: {e}", level="ERROR")
+                self._log(f"Failed to spawn cloudflared process: {e}", level="ERROR")
                 return None
 
             async def _stream_reader(stream: asyncio.StreamReader, stream_name: str):
@@ -130,10 +130,10 @@ class CloudflareTunnelManager:
 
             try:
                 await asyncio.wait_for(self._found_event.wait(), timeout=timeout)
-                self._log(f"✅ Cloudflare Tunnel live: {normalized_local} -> {self.public_url}", level="SUCCESS")
+                self._log(f"Cloudflare Tunnel live: {normalized_local} -> {self.public_url}", level="SUCCESS")
                 return self.public_url
             except asyncio.TimeoutError:
-                self._log(f"⚠️ Timed out waiting for Cloudflare Tunnel URL ({timeout}s).", level="WARNING")
+                self._log(f"Timed out waiting for Cloudflare Tunnel URL ({timeout}s).", level="WARNING")
                 await self._stop_internal()
                 return None
 
@@ -192,7 +192,7 @@ class CloudflareTunnelManager:
             self.proc = None
 
         if self.public_url:
-            self._log(f"🛑 Terminated Cloudflare Tunnel ({self.public_url})")
+            self._log(f"Terminated Cloudflare Tunnel ({self.public_url})")
         self.public_url = None
         self.local_target_url = None
         self._found_event = None
